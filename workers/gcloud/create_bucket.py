@@ -1,5 +1,6 @@
 import os
 import sys
+from json import dumps
 
 import pika
 import slack
@@ -7,6 +8,15 @@ from google.cloud import storage
 
 from . import ROUTING_KEY
 from .. import EXCHANGE_NAME
+
+
+config = Config("deploy.env")
+DEBUG = config("DEBUG", cast=bool, default=False)
+AMQP_CREDS = pika.credentials.PlainCredentials(
+    config.get("AMQP_USERNAME", default="guest"),
+    config.get("AMQP_PASSWORD", default="guest"),
+)
+AMQP_SERVICE_HOST = config.get("AMQP_SERVICE_HOST", default="localhost")
 
 
 def callback(ch, method, properties, body):
