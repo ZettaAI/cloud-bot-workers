@@ -1,21 +1,24 @@
-import os
-import sys
 from json import dumps
-
-import pika
-import slack
-from google.cloud import storage
+from json import loads
 
 from . import ROUTING_KEY
+from .buckets import create
 from .. import config
 from .. import amqp_cnxn
 
 
 def callback(ch, method, properties, body):
     print(" [x] %r:%r" % (method.routing_key, body))
-    # storage_client = storage.Client()
-    # bucket_name = "akhilesh-test2"
-    # bucket = storage_client.create_bucket(bucket_name)
+
+    request_body = loads(body)
+    print(dumps(request_body, indent=4))
+
+    bucket_name = request_body["event"]["text"].split()[1]
+    print(bucket_name)
+    print(create(bucket_name))
+    # call relevant function
+    # send response
+
     # response = client.chat_postMessage(
     #     channel="#general", text=f"{bucket.name} created!"
     # )
@@ -23,11 +26,9 @@ def callback(ch, method, properties, body):
 
 
 channel = amqp_cnxn.channel()
-
 channel.exchange_declare(exchange=config.EXCHANGE_NAME, exchange_type="topic")
 
-result = channel.queue_declare("", exclusive=True)
-queue_name = result.method.queue
+queue_name = channel.queue_declare("", exclusive=True).method.queue
 channel.queue_bind(
     exchange=config.EXCHANGE_NAME, queue=queue_name, routing_key=ROUTING_KEY
 )
