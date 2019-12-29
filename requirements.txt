@@ -1,0 +1,4 @@
+cloud-volume
+slackclient
+pika
+google-cloud-storage
