@@ -15,6 +15,7 @@ from pika.credentials import PlainCredentials
 load_dotenv()
 
 _config_fields = (
+    "SLACK_API_POST",
     "SLACK_API_TOKEN",
     "SLACK_SIGNING_SECRET",
     "AMQP_SERVICE_HOST",
@@ -23,6 +24,7 @@ _config_fields = (
     "EXCHANGE_NAME",
 )
 _config_defaults = (
+    "https://slack.com/api/chat.postMessage",
     os.environ["SLACK_API_TOKEN"],
     os.environ["SLACK_SIGNING_SECRET"],
     os.environ.get("AMQP_SERVICE_HOST", "localhost"),

@@ -1,6 +1,9 @@
 from json import dumps
 from json import loads
 
+from requests import post
+from requests import codes
+
 from . import ROUTING_KEY
 from .buckets import create
 from .. import config
@@ -9,20 +12,21 @@ from .. import amqp_cnxn
 
 def callback(ch, method, properties, body):
     print(" [x] %r:%r" % (method.routing_key, body))
-
     request_body = loads(body)
-    print(dumps(request_body, indent=4))
+    event = request_body["event"]
+    # print(dumps(request_body, indent=4))
 
     bucket_name = request_body["event"]["text"].split()[1]
-    print(bucket_name)
-    print(create(bucket_name))
-    # call relevant function
-    # send response
-
-    # response = client.chat_postMessage(
-    #     channel="#general", text=f"{bucket.name} created!"
-    # )
-    # assert response["ok"]
+    r = post(
+        config.SLACK_API_POST,
+        headers={"Authorization": f"Bearer {config.SLACK_API_TOKEN}"},
+        data={
+            "channel": event["channel"],
+            "thread_ts": event["ts"],
+            "text": create(bucket_name),
+        },
+    )
+    assert r.status_code == codes.ok  # pylint: disable=no-member
 
 
 channel = amqp_cnxn.channel()
