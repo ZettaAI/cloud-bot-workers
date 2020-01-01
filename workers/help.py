@@ -26,7 +26,6 @@ def callback(ch, method, properties, body):
 
     ctx = cmd_ctxs[message[1]]
     text = ctx.get_help()
-    print(text)
     r = post(
         config.SLACK_API_POST,
         headers={"Authorization": f"Bearer {config.SLACK_API_TOKEN}"},
