@@ -30,7 +30,9 @@ cmd = gcloud_cmds.get_command(None, "create")
 gcloud_ctx = Context(gcloud_cmds, info_name="gcloud")
 create_ctx = Context(cmd, parent=gcloud_ctx, info_name="create")
 
-print(cmd.get_help(create_ctx))
+# print(cmd.get_help(create_ctx))
 # print()
 # print(gcloud_cmds.get_help(gcloud_ctx))
+
+create_ctx.invoke(bucket_create_cmd, bucket_name="akhilesh-test-click")
 
