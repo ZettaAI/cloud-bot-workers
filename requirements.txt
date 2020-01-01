@@ -1,5 +1,6 @@
 cloud-volume
 python-dotenv
 slackclient
+click
 pika
 google-cloud-storage
