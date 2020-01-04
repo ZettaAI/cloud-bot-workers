@@ -1,7 +1,7 @@
 services: docker
 env:
   global:
-  - GCP_PROJECT_ID=zetta-fly-vnc-001
+  - GCP_PROJECT_ID=zetta-lee-fly-vnc-001
   - REPO_ID=cloud-bot-workers
   - CLOUDSDK_CORE_DISABLE_PROMPTS=1
 before_install:
@@ -16,6 +16,6 @@ script:
 - |
   set -x;
   gcloud container images delete "gcr.io/$GCP_PROJECT_ID/${REPO_ID}:base";
-  gcloud builds submit --config cloudbuild.yaml .;
+  gcloud builds submit;
   set +x
 

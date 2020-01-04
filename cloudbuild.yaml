@@ -5,7 +5,7 @@ steps:
   - '-c'
   - |
     docker build -t gcr.io/$GCP_PROJECT_ID/$REPO_ID:base .
-  timeout: 900s
+  timeout: 600s
 images:
 - 'gcr.io/$GCP_PROJECT_ID/$REPO_ID:base'
 
