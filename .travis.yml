@@ -1,0 +1,21 @@
+services: docker
+env:
+  global:
+  - GCP_PROJECT_ID=zetta-fly-vnc-001
+  - REPO_ID=cloud-bot-workers
+  - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+before_install:
+- openssl aes-256-cbc -K $encrypted_51b294d7ffd6_key -iv $encrypted_51b294d7ffd6_iv -in key.json.enc -out key.json -d
+- curl https://sdk.cloud.google.com | bash > /dev/null
+- source "$HOME/google-cloud-sdk/path.bash.inc"
+- gcloud auth activate-service-account --key-file=key.json
+- gcloud auth configure-docker    # enable "docker push" to gcr
+- gcloud config set project "${GCP_PROJECT_ID}"
+install: true # no-op
+script:
+- |
+  set -x;
+  gcloud container images delete "${REPO_ID}:base";
+  gcloud builds submit --config cloudbuild.yaml .;
+  set +x
+

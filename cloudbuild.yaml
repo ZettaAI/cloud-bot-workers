@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    docker build -t gcr.io/$GCP_PROJECT_ID/$REPO_ID:base .
+  timeout: 900s
+images:
+- 'gcr.io/$GCP_PROJECT_ID/$REPO_ID:base'
+

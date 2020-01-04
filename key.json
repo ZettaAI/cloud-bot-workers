@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "zetta-lee-fly-vnc-001",
+  "private_key_id": "5bc5f939e395efc37a0e489d55b687ccf19391c4",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCy56kD2UHUQlws\nEZknS7bss1Tdn0wuZDKX24LUuPQzl8/1reR3iVi87FgY4kgS5FPERb3I5t7Mhv40\nEFujPOB6lUOfPi+NgOJ2932ituXWC9GskvC02OHi7QxereOtmro21r3NlYRf8nx5\nvwGa9mIN24ZtMT4CIOADDp1DN7AJWpsPItGxwxwe/3NmqJeiAWFTcwKHHKYjDp2V\nnGD2UBih8bFv7nKGndR048k4g6YwfRo23mDVxZ53vmsno/NmG6hVkrZIY2EEGMVu\nSJV5NWIdI7KWX2z1EsjZQfmp6Yk0gDbZspPLMX1kGVMzQVc0n0cjjSE0GBm1OFAn\nn0BsF6ZfAgMBAAECggEACiIU8KLdl6gqkFRu2ErxkXaW1/at2fLS6scEIghXzJRM\nsx2mUx70Z777Pm2Sp39HP1az6S0qcWsz+r7yccyA6nCJ4/shtmIWcaaS9yRk4DrL\nJXstJxEhujiy+qneu3aIFZMULRDK7qRNaJfo/131L9O/SXAAkx5JkeLCBYyh6+Wd\novijEjMDu9EbkBAN0xRoPghnkk3c8zv1V2p2jN745zUm/8H2vFlIuuDCpHiZk/x8\n5RHwMBCabXb7kBXObkCZoWfteROSEgLoMhzHvNQrCucfKEhGenpobhNEPf+5bW2r\nil6khMy7yiCKUKH2AWrcq8Y7szdlV6t7KKi1AN3IAQKBgQDazSdpFgvEAjAFTHT+\noILGls0p3wgpcEoeeTMUY3P8Ba6ahRMV5pMshcNKsVG9bicvCLJ0JfvbofuslIHH\nnjIB3Zqc43CFFJxHS50KWK29SSyZk+emm5+hUPIIOxcSjQvIkqPdv7Bb2LH9xdro\nRinvUZZkqLbbrz7DRRnQLgT+OQKBgQDRUhnjcngJ2SqB4jpdNBlo6dg36wP8n2UC\nMElwe05437TeTYyRtQF6Z9oLaKBjejFxsY/5yjdh3WM5rGsZ2IgA0CM2A8Xz046M\nIlOxFccZ24pEFdE9VPmTFdm23OS1vz2+Rlrs+t3HsSyLali78Jr9+7HOpsCm6lTx\nA1urKx9JVwKBgQCVnMS/EakX7VsCtIYneoAR5RoC8JP3KeY0sjFgVqT/hq8ez7H+\nPr0SK6EfWOKIwmKewbasvzBZvYiHOMEJSz3skqhfcRIGndJC2gxW/85FaVzK4xz6\nit17hAsL38PmFnYhP0w3nBSuqR0EZx9Jxnh0QXix+b+XtlwXUA/XjzAw2QKBgEF9\n153DXe1u5g7XUn2A5IZfzAfK32d2E6t4ojGwUuAc1kFLsDSSlpDO13kEVlJpk/jH\nno2ACI31L6uG18exaPQgKzQmQBRG1+3ee6MHdlEP0JX24Y23/ZJYntLJEEIRQOc8\nqgxFfYiSVaaVMogzArt+uaY3pEVVQhhafZ7zkglnAoGANROs8q25acerH0HeYS+T\nDOrxM+Mkj0I12F4V5OXux1zLmkqJvX6vJuRFcPVT81aHbJTLtJIEI+Bpp8lV1C4o\nLZXkoeoyzB8NOaTxd5uIRdEs0+5PcyAvysvj16RQsXEt6cKJX+hv932zxDBKdL1l\nAJMy0sCbZCDeNgzl9HAA2Jg=\n-----END PRIVATE KEY-----\n",
+  "client_email": "cloud-bot-workers@zetta-lee-fly-vnc-001.iam.gserviceaccount.com",
+  "client_id": "111322344068989403589",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-bot-workers%40zetta-lee-fly-vnc-001.iam.gserviceaccount.com"
+}
