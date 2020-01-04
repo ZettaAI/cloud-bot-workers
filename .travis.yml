@@ -15,7 +15,7 @@ install: true # no-op
 script:
 - |
   set -x;
-  gcloud container images delete "${REPO_ID}:base";
+  gcloud container images delete "gcr.io/$GCP_PROJECT_ID/${REPO_ID}:base";
   gcloud builds submit --config cloudbuild.yaml .;
   set +x
 
