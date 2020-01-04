@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    docker build -t gcr.io/$PROJECT_ID/cloud-bot-workers:base .
+  timeout: 900s
+images:
+- 'gcr.io/$PROJECT_ID/cloud-bot-workers:base'
+
