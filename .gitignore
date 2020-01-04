@@ -3,3 +3,4 @@ __pycache__/
 
 .devcontainer/
 .vscode/
+*key.json
