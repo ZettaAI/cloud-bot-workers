@@ -12,5 +12,4 @@ ROUTING_KEY = "gcloud.#"
 
 cmd_grp = Group("gcloud", add_help_option=False)
 cmd_grp.add_command(bucket_grp)
-ctx = Context(cmd_grp, info_name="gcloud")
 
