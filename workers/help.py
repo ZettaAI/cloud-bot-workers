@@ -15,11 +15,11 @@ from requests import codes
 
 from . import config
 from . import amqp_cnxn
+from .slack import post_to_channel
 
 from .gcloud import cmd_grp as gcloud_grp
 
 ROUTING_KEY = "help.#"
-
 cmd_grps = {"gcloud": gcloud_grp}
 
 
@@ -46,15 +46,7 @@ def callback(ch, method, properties, body):
     )
 
     ctx = Context(nested_grp_or_cmd, info_name=" ".join(cmds[1:]))
-    r = post(
-        config.SLACK_API_POST,
-        headers={"Authorization": f"Bearer {config.SLACK_API_TOKEN}"},
-        data={
-            "channel": event["channel"],
-            # "thread_ts": event["ts"],
-            "text": nested_grp_or_cmd.get_help(ctx),
-        },
-    )
+    r = post_to_channel(nested_grp_or_cmd.get_help(ctx), event["channel"])
     assert r.status_code == codes.ok  # pylint: disable=no-member
 
 
