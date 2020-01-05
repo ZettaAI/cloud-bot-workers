@@ -1,11 +1,12 @@
 from json import dumps
 from json import loads
 
+from click import Context
 from requests import post
 from requests import codes
 
+from . import cmd_grp
 from . import ROUTING_KEY
-from .buckets import create
 from .. import config
 from .. import amqp_cnxn
 
@@ -23,20 +24,28 @@ from .. import amqp_cnxn
 # Worker can return information regarding help command
 
 
+def invoke_cmd(cmd: str) -> str:
+    ctx = Context(cmd_grp, info_name=cmd_grp.name, obj={})
+    cmd_grp.parse_args(ctx, cmd.split()[1:])
+    try:
+        return cmd_grp.invoke(ctx)
+    except Exception as err:
+        return f":warning: Something went wrong.\n```{str(err)}```"
+
+
 def callback(ch, method, properties, body):
-    print(" [x] %r:%r" % (method.routing_key, body))
     request_body = loads(body)
     event = request_body["event"]
     # print(dumps(request_body, indent=4))
 
-    bucket_name = request_body["event"]["text"].split()[1]
+    user_cmd = request_body["event"]["text"].split(" ", 1)[1]
     r = post(
         config.SLACK_API_POST,
         headers={"Authorization": f"Bearer {config.SLACK_API_TOKEN}"},
         data={
             "channel": event["channel"],
-            "thread_ts": event["ts"],
-            "text": create(bucket_name),
+            # "thread_ts": event["ts"],
+            "text": invoke_cmd(user_cmd),
         },
     )
     assert r.status_code == codes.ok  # pylint: disable=no-member
