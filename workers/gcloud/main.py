@@ -9,6 +9,7 @@ from . import cmd_grp
 from . import ROUTING_KEY
 from .. import config
 from .. import amqp_cnxn
+from ..slack import Response as SlackResponse
 
 # TODO
 # design as plugins that can be "registered"
@@ -34,21 +35,22 @@ def invoke_cmd(cmd: str) -> str:
 
 
 def callback(ch, method, properties, body):
-    request_body = loads(body)
-    event = request_body["event"]
-    # print(dumps(request_body, indent=4))
+    event = loads(body)["event"]
+    user_cmd = event["text"].split(" ", 1)[1]
+    message = invoke_cmd(user_cmd)
 
-    user_cmd = request_body["event"]["text"].split(" ", 1)[1]
-    r = post(
-        config.SLACK_API_POST,
-        headers={"Authorization": f"Bearer {config.SLACK_API_TOKEN}"},
-        data={
-            "channel": event["channel"],
-            # "thread_ts": event["ts"],
-            "text": invoke_cmd(user_cmd),
-        },
-    )
-    assert r.status_code == codes.ok  # pylint: disable=no-member
+    response = SlackResponse(event)
+    req = response.send(message)
+    # r = post(
+    #     config.SLACK_API_POST,
+    #     headers={"Authorization": f"Bearer {config.SLACK_API_TOKEN}"},
+    #     data={
+    #         "channel": event["channel"],
+    #         # "thread_ts": event["ts"],
+    #         "text": invoke_cmd(user_cmd),
+    #     },
+    # )
+    assert req.status_code == codes.ok  # pylint: disable=no-member
 
 
 channel = amqp_cnxn.channel()
