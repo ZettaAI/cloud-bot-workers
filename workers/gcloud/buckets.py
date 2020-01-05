@@ -5,7 +5,9 @@ from click import Command
 from google.cloud import storage
 
 
-def create(name):
+def create(*args, **kwargs):
+    print(args, kwargs)
+    return
     storage_client = storage.Client()
     try:
         bucket = storage_client.create_bucket(name)
@@ -14,7 +16,9 @@ def create(name):
         return str(err)
 
 
-def lookup(name):
+def lookup(*args, **kwargs):
+    print(args, kwargs)
+    return    
     storage_client = storage.Client()
     bucket = storage_client.lookup_bucket(name)
     if not bucket:
@@ -37,7 +41,7 @@ create_cmd = Command(
 
 lookup_cmd = Command(
     "lookup",
-    callback=create,
+    callback=lookup,
     help="- check if a bucket exists.",
     params=[name],
     add_help_option=False,
@@ -47,6 +51,6 @@ lame = Option(
     ["-l", "--lame"], type=str, required=True, nargs=1, help="Lame of the bucket."
 )
 
-cmd_grp = Group("bucket", add_help_option=False, params=[lame])
+cmd_grp = Group("bucket", add_help_option=False, params=[lame], callback=lookup)
 cmd_grp.add_command(create_cmd)
 cmd_grp.add_command(lookup_cmd)
