@@ -1,12 +1,25 @@
-from click import Group
-from click import Option
-from click import Context
-from click import Command
+import click
 from google.cloud import storage
 
 
-def create(*args, **kwargs):
-    print(args, kwargs)
+@click.group("bucket", help="performs actions related buckets.", add_help_option=False)
+@click.option(
+    "--lame", "-l", type=str, required=True, nargs=1, help="Lame of the bucket."
+)
+@click.pass_context
+def bucket(ctx, *args, **kwargs):
+    print(ctx.obj, args, kwargs)
+    ctx.obj["lame"] = kwargs["lame"]
+
+
+@bucket.command("create", help="creates a bucket.", add_help_option=False)
+@click.option("--overwrite", is_flag=True, help="Overwrite existing graph")
+@click.option(
+    "--name", "-n", type=str, required=True, nargs=1, help="Name of the bucket."
+)
+@click.pass_context
+def create(ctx, *args, **kwargs):
+    print(ctx.obj, args, kwargs)
     return
     storage_client = storage.Client()
     try:
@@ -16,41 +29,18 @@ def create(*args, **kwargs):
         return str(err)
 
 
+@bucket.command("lookup", help="checks if a bucket exisits.", add_help_option=False)
+@click.option("--overwrite", is_flag=True, help="Overwrite existing graph")
+@click.option(
+    "--name", "-n", type=str, required=True, nargs=1, help="Name of the bucket."
+)
+@click.pass_context
 def lookup(*args, **kwargs):
     print(args, kwargs)
-    return    
+
+    return
     storage_client = storage.Client()
     bucket = storage_client.lookup_bucket(name)
     if not bucket:
         return f"{bucket.name} does not exist."
     return f"{bucket.name} exists."
-
-
-name = Option(
-    ["-n", "--name"], type=str, required=True, nargs=1, help="Name of the bucket."
-)
-
-create_cmd = Command(
-    "create",
-    callback=create,
-    help="- creates a bucket.",
-    params=[name],
-    add_help_option=False,
-)
-
-
-lookup_cmd = Command(
-    "lookup",
-    callback=lookup,
-    help="- check if a bucket exists.",
-    params=[name],
-    add_help_option=False,
-)
-
-lame = Option(
-    ["-l", "--lame"], type=str, required=True, nargs=1, help="Lame of the bucket."
-)
-
-cmd_grp = Group("bucket", add_help_option=False, params=[lame], callback=lookup)
-cmd_grp.add_command(create_cmd)
-cmd_grp.add_command(lookup_cmd)
