@@ -17,16 +17,14 @@ load_dotenv()
 _config_fields = (
     "SLACK_API_POST",
     "SLACK_API_TOKEN",
-    "SLACK_SIGNING_SECRET",
     "AMQP_SERVICE_HOST",
     "AMQP_USERNAME",
     "AMQP_PASSWORD",
     "EXCHANGE_NAME",
 )
 _config_defaults = (
-    "https://slack.com/api/chat.postMessage",
+    os.environ.get("SLACK_API_POST", "https://slack.com/api/chat.postMessage"),
     os.environ["SLACK_API_TOKEN"],
-    os.environ["SLACK_SIGNING_SECRET"],
     os.environ.get("AMQP_SERVICE_HOST", "localhost"),
     os.environ.get("AMQP_USERNAME", "guest"),
     os.environ.get("AMQP_PASSWORD", "guest"),
