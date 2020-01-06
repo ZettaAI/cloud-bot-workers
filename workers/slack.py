@@ -14,13 +14,16 @@ class Response:
     """
 
     def __init__(self, event: Dict[str, Any]):
+        # print(dumps(event, indent=2))
         self.event = event
 
     def send(self, message: str):
         """Make call to slack api."""
-        if "channel" in self.event:
-            return self.post_to_thread(message, self.event["event_ts"])
-        return self.post_to_user(message)
+        if "channel_type" in self.event:
+            return self.post_to_user(message, self.event["channel"])
+        return self.post_to_thread(
+            message, self.event["event_ts"], self.event["channel"]
+        )
 
     def post_to_thread(self, message: str, ts: str, channel: str = None):
         response = post(
@@ -38,11 +41,11 @@ class Response:
         )
         return response
 
-    def post_to_user(self, message: str):
+    def post_to_user(self, message: str, user_channel: str):
         response = post(
             config.SLACK_API_POST,
             headers={"Authorization": f"Bearer {config.SLACK_API_TOKEN}"},
-            data={"text": message,},
+            data={"channel": user_channel, "text": message},
         )
         return response
 

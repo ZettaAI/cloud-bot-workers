@@ -36,20 +36,9 @@ def invoke_cmd(cmd: str) -> str:
 
 def callback(ch, method, properties, body):
     event = loads(body)["event"]
-    user_cmd = event["text"].split(" ", 1)[1]
-    message = invoke_cmd(user_cmd)
-
+    message = invoke_cmd(event["user_cmd"])
     response = SlackResponse(event)
     req = response.send(message)
-    # r = post(
-    #     config.SLACK_API_POST,
-    #     headers={"Authorization": f"Bearer {config.SLACK_API_TOKEN}"},
-    #     data={
-    #         "channel": event["channel"],
-    #         # "thread_ts": event["ts"],
-    #         "text": invoke_cmd(user_cmd),
-    #     },
-    # )
     assert req.status_code == codes.ok  # pylint: disable=no-member
 
 
