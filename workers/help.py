@@ -16,7 +16,7 @@ from requests import codes
 
 from . import config
 from . import amqp_cnxn
-from .slack import SlackResponse
+from .slack import Response as SlackResponse
 
 from .gcloud import cmd_grp as gcloud_grp
 
