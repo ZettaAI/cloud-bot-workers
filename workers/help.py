@@ -16,7 +16,7 @@ from requests import codes
 
 from . import config
 from . import amqp_cnxn
-from .slack import post_to_channel
+from .slack import SlackResponse
 
 from .gcloud import cmd_grp as gcloud_grp
 
@@ -45,7 +45,7 @@ def _get_nested_command(grp: Group, names: Iterable[str]) -> Union[Group, Comman
 
 def callback(ch, method, properties, body):
     event = loads(body)["event"]
-    cmds = event["text"].split()[1:]
+    cmds = event["user_cmd"].split()
     assert cmds[0] == "help"
 
     if len(cmds) == 1:
@@ -59,8 +59,9 @@ def callback(ch, method, properties, body):
         )
         ctx = Context(nested_grp_or_cmd, info_name=" ".join(cmds[1:]))
         msg = f"```{nested_grp_or_cmd.get_help(ctx)}```"
-    r = post_to_channel(msg, event["channel"])
-    assert r.status_code == codes.ok  # pylint: disable=no-member
+
+    response = SlackResponse(event)
+    assert response.send(msg).status_code == codes.ok  # pylint: disable=no-member
 
 
 channel = amqp_cnxn.channel()

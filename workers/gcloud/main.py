@@ -36,10 +36,9 @@ def invoke_cmd(cmd: str) -> str:
 
 def callback(ch, method, properties, body):
     event = loads(body)["event"]
-    message = invoke_cmd(event["user_cmd"])
+    msg = invoke_cmd(event["user_cmd"])
     response = SlackResponse(event)
-    req = response.send(message)
-    assert req.status_code == codes.ok  # pylint: disable=no-member
+    assert response.send(msg).status_code == codes.ok  # pylint: disable=no-member
 
 
 channel = amqp_cnxn.channel()
