@@ -15,7 +15,7 @@ def create_service_account(project_id, name, display_name):
     service = googleapiclient.discovery.build("iam", "v1", credentials=credentials)
 
     my_service_account = (
-        service.projects()
+        service.projects()  # pylint: disable=no-member
         .serviceAccounts()
         .create(
             name="projects/" + project_id,
