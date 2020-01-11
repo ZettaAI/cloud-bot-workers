@@ -1,5 +1,3 @@
-import os
-
 from google.oauth2 import service_account
 import googleapiclient.discovery
 
@@ -7,13 +5,7 @@ import googleapiclient.discovery
 def create_service_account(project_id, name, display_name):
     """Creates a service account."""
 
-    credentials = service_account.Credentials.from_service_account_file(
-        filename=os.environ["GOOGLE_APPLICATION_CREDENTIALS"],
-        scopes=["https://www.googleapis.com/auth/cloud-platform"],
-    )
-
-    service = googleapiclient.discovery.build("iam", "v1", credentials=credentials)
-
+    service = googleapiclient.discovery.build("iam", "v1")
     my_service_account = (
         service.projects()  # pylint: disable=no-member
         .serviceAccounts()
@@ -28,4 +20,16 @@ def create_service_account(project_id, name, display_name):
     return my_service_account
 
 
+def delete_service_account(email):
+    """Deletes a service account."""
+    service = googleapiclient.discovery.build("iam", "v1")
+
+    service.projects().serviceAccounts().delete( # pylint: disable=no-member
+        name="projects/-/serviceAccounts/" + email
+    ).execute()
+
+    print("Deleted service account: " + email)
+
+
 create_service_account("zetta-lee-fly-vnc-001", "sa-test", "sa-displayname")
+delete_service_account("sa-test@zetta-lee-fly-vnc-001.iam.gserviceaccount.com")
