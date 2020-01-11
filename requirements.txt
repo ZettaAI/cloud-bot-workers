@@ -4,3 +4,4 @@ slackclient
 click
 pika
 google-cloud-storage
+google-api-python-client
