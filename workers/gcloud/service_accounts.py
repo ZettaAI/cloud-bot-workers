@@ -1,3 +1,4 @@
+# pylint: disable=no-member
 import os
 import base64
 
@@ -22,7 +23,7 @@ class ServiceAccountActions:
     def list(self):
         """Lists all service accounts for the current project."""
         sa = (
-            self.resource.projects()  # pylint: disable=no-member
+            self.resource.projects()
             .serviceAccounts()
             .list(name="projects/" + self.project_id)
             .execute()
@@ -39,28 +40,20 @@ class ServiceAccountActions:
                 "serviceAccount": {"displayName": display_name},
             },
         }
-        account = (
-            self.resource.projects()  # pylint: disable=no-member
-            .serviceAccounts()
-            .create(**options)
-            .execute()
-        )
+        account = self.resource.projects().serviceAccounts().create(**options).execute()
         return f"Service account `{account['email']}` created."
 
     def rename(self, email, new_display_name):
         """Changes a service account's display name."""
         resource_name = f"projects/-/serviceAccounts/{email}"
         account = (
-            self.resource.projects()  # pylint: disable=no-member
-            .serviceAccounts()
-            .get(name=resource_name)
-            .execute()
+            self.resource.projects().serviceAccounts().get(name=resource_name).execute()
         )
 
         old_display_name = account["displayName"]
         account["displayName"] = new_display_name
         account = (
-            self.resource.projects()  # pylint: disable=no-member
+            self.resource.projects()
             .serviceAccounts()
             .update(name=resource_name, body=account)
             .execute()
@@ -71,29 +64,41 @@ class ServiceAccountActions:
 
     def disable(self, email):
         """Disables a service account."""
-        self.resource.projects().serviceAccounts().disable(  # pylint: disable=no-member
+        self.resource.projects().serviceAccounts().disable(
             name=f"projects/-/serviceAccounts/{email}"
         ).execute()
         return f"Service account `{email}` disabled."
 
     def enable(self, email):
         """Enables a service account."""
-        self.resource.projects().serviceAccounts().enable(  # pylint: disable=no-member
+        self.resource.projects().serviceAccounts().enable(
             name=f"projects/-/serviceAccounts/{email}"
         ).execute()
         return f"Service account `{email}` enabled."
 
     def delete(self, email):
         """Deletes a service account."""
-        self.resource.projects().serviceAccounts().delete(  # pylint: disable=no-member
+        self.resource.projects().serviceAccounts().delete(
             name=f"projects/-/serviceAccounts/{email}"
         ).execute()
         return f"Service account `{email}` deleted."
 
+    def list_keys(self, email):
+        """Lists all keys for a service account."""
+        keys = (
+            self.resource.projects()
+            .serviceAccounts()
+            .keys()
+            .list(name=f"projects/-/serviceAccounts/{email}")
+            .execute()
+        )
+        msg = "\n".join(key["name"].split("/")[-1] for key in keys["keys"])
+        return f"```{msg}```"
+
     def create_key(self, email):
         """Creates a service account key."""
         key = (
-            self.service.projects()  # pylint: disable=no-member
+            self.resource.projects()
             .serviceAccounts()
             .keys()
             .create(name=f"projects/-/serviceAccounts/{email}", body={})
@@ -177,4 +182,25 @@ def enable(ctx, *args, **kwargs):
 def delete(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
     return sa_actions.delete(*args, **kwargs)
+
+
+@service_accounts.group(
+    "keys",
+    help="List service account keys. See help for subcommands.",
+    add_help_option=False,
+    invoke_without_command=True,
+)
+@click.argument("email", type=str)
+@click.pass_context
+def keys(ctx, *args, **kwargs):
+    sa_actions = ctx.obj["sa_actions"]
+    ctx.obj["email"] = kwargs["email"]
+    return sa_actions.list_keys(*args, **kwargs)
+
+
+@keys.command("create", help="Create service account key.", add_help_option=False)
+@click.pass_context
+def create_key(ctx, *args, **kwargs):
+    sa_actions = ctx.obj["sa_actions"]
+    return sa_actions.create_key(ctx.obj["email"])
 

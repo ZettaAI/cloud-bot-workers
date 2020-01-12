@@ -2,6 +2,7 @@ from json import dumps
 from json import loads
 
 from click import Context
+from click.exceptions import MissingParameter
 from requests import post
 from requests import codes
 
@@ -17,8 +18,10 @@ def invoke_cmd(cmd: str) -> str:
     cmd_grp.parse_args(ctx, cmd.split()[1:])
     try:
         return cmd_grp.invoke(ctx)
+    except MissingParameter:
+        return f":warning: Something went wrong.\n```Missing parameter.```"
     except Exception as err:
-        return f":warning: Something went wrong.\n```{str(err)}```"
+        return f":warning: Something went wrong.\n```{err}```"
 
 
 def callback(ch, method, properties, body):
