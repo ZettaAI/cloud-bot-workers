@@ -14,7 +14,6 @@ class Response:
     """
 
     def __init__(self, event: Dict[str, Any]):
-        # print(dumps(event, indent=2))
         self.event = event
 
     def send(self, message: str):

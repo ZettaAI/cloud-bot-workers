@@ -13,7 +13,7 @@ from ..slack import Response as SlackResponse
 
 
 cmd = "gcloud bucket iam -n akhilesh-test-1"
-# cmd = "gcloud bucket iam -n akhilesh-test-1 add -r roles/storage.objectViewer -e user:akhileshhalageri@gmail.com"
+cmd = "gcloud bucket iam -n akhilesh-test-1 add -r roles/storage.objectViewer -m user:akhileshhalageri@gmail.com"
 ctx = Context(cmd_grp, info_name=cmd_grp.name, obj={})
 cmd_grp.parse_args(ctx, cmd.split()[1:])
 cmd_grp.invoke(ctx)
