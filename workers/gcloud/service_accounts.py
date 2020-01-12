@@ -1,4 +1,5 @@
 import os
+import base64
 
 import click
 import googleapiclient.discovery
@@ -89,6 +90,19 @@ class ServiceAccountActions:
         ).execute()
         return f"Service account `{email}` deleted."
 
+    def create_key(self, email):
+        """Creates a service account key."""
+        key = (
+            self.service.projects()  # pylint: disable=no-member
+            .serviceAccounts()
+            .keys()
+            .create(name=f"projects/-/serviceAccounts/{email}", body={})
+            .execute()
+        )
+        print("Created key: " + key["name"])
+        print(key.items())
+        print(base64.b64decode(key["privateKeyData"]))
+
 
 @click.group(
     "sa",
@@ -141,7 +155,6 @@ def rename(ctx, *args, **kwargs):
 @click.argument("email", type=str)
 @click.pass_context
 def disable(ctx, *args, **kwargs):
-    print(args, kwargs)
     sa_actions = ctx.obj["sa_actions"]
     return sa_actions.disable(*args, **kwargs)
 

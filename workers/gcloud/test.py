@@ -15,6 +15,8 @@ Needs topics for each category and one for help
 add command group for service accounts.
 Register it in init
 
+keys https://stackoverflow.com/questions/44291205/iam-service-account-key-vs-google-credentials-file/
+
 """
 
 from click import Context
