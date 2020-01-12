@@ -1,3 +1,5 @@
+import os
+
 import click
 import googleapiclient.discovery
 from google.oauth2 import service_account
@@ -90,7 +92,7 @@ class ServiceAccountActions:
 
 @click.group(
     "sa",
-    help="List service accounts.",
+    help="List service accounts. See help for sub commands.",
     add_help_option=False,
     invoke_without_command=True,
 )
@@ -101,7 +103,7 @@ class ServiceAccountActions:
     default=lambda: os.environ["DEFAULT_PROJECT"],
     nargs=1,
     help="Project name.",
-    show_default=True,
+    show_default=os.environ["DEFAULT_PROJECT"],
 )
 @click.pass_context
 def service_accounts(ctx, *args, **kwargs):
@@ -129,8 +131,6 @@ def create(ctx, *args, **kwargs):
 @click.argument("display_name", type=str)
 @click.pass_context
 def rename(ctx, *args, **kwargs):
-    """Create new service account."""
-    print(kwargs)
     sa_actions = ctx.obj["sa_actions"]
     return sa_actions.rename(*args)
 
@@ -141,30 +141,26 @@ def rename(ctx, *args, **kwargs):
 @click.argument("email", type=str)
 @click.pass_context
 def disable(ctx, *args, **kwargs):
-    """Disable service account."""
-    print(args)
     sa_actions = ctx.obj["sa_actions"]
     return sa_actions.disable(*args)
 
 
 @service_accounts.command(
-    "enable", help="Change service account displayname.", add_help_option=False
+    "enable", help="Enable service account.", add_help_option=False
 )
 @click.argument("email", type=str)
 @click.pass_context
 def enable(ctx, *args, **kwargs):
-    """Enable service account."""
     sa_actions = ctx.obj["sa_actions"]
     return sa_actions.enable(*args)
 
 
 @service_accounts.command(
-    "delete", help="Change service account displayname.", add_help_option=False
+    "delete", help="Delete service account.", add_help_option=False
 )
 @click.argument("email", type=str)
 @click.pass_context
 def delete(ctx, *args, **kwargs):
-    """Delete service account."""
     sa_actions = ctx.obj["sa_actions"]
     return sa_actions.delete(*args)
 
