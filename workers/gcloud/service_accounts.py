@@ -2,109 +2,97 @@ from google.oauth2 import service_account
 import googleapiclient.discovery
 
 
-def list_service_accounts(project_id):
-    """Lists all service accounts for the current project."""
+class ServiceAccountActions:
+    def __init__(self, project_id):
+        self._project_id = project_id
+        self._service = googleapiclient.discovery.build("iam", "v1",)
 
-    service = googleapiclient.discovery.build("iam", "v1",)
+    @property
+    def service(self):
+        return self._service
 
-    service_accounts = (
-        service.projects()  # pylint: disable=no-member
-        .serviceAccounts()
-        .list(name="projects/" + project_id)
-        .execute()
-    )
+    @property
+    def project_id(self):
+        return self._project_id
 
-    for account in service_accounts["accounts"]:
-        print("Name: " + account["name"])
-        print("Email: " + account["email"])
-        print(" ")
-    return service_accounts
-
-
-def create_service_account(project_id, name, display_name):
-    """Creates a service account."""
-
-    service = googleapiclient.discovery.build("iam", "v1")
-    my_service_account = (
-        service.projects()  # pylint: disable=no-member
-        .serviceAccounts()
-        .create(
-            name="projects/" + project_id,
-            body={"accountId": name, "serviceAccount": {"displayName": display_name}},
+    def list(self):
+        """Lists all service accounts for the current project."""
+        sa = (
+            self.service.projects()  # pylint: disable=no-member
+            .serviceAccounts()
+            .list(name="projects/" + self.project_id)
+            .execute()
         )
-        .execute()
-    )
+        msg = "\n".join([f"{_['name']}{_['email']}" for _ in sa["accounts"]])
+        return f"```{msg}```"
 
-    print("Created service account: " + my_service_account["email"])
-    return my_service_account
-
-
-def rename_service_account(email, new_display_name):
-    """Changes a service account's display name."""
-
-    # First, get a service account using List() or Get()
-
-    service = googleapiclient.discovery.build("iam", "v1",)
-
-    resource = "projects/-/serviceAccounts/" + email
-
-    my_service_account = (
-        service.projects()
-        .serviceAccounts()
-        .get(name=resource)
-        .execute()  # pylint: disable=no-member
-    )
-
-    # Then you can update the display name
-    my_service_account["displayName"] = new_display_name
-    my_service_account = (
-        service.projects()  # pylint: disable=no-member
-        .serviceAccounts()
-        .update(name=resource, body=my_service_account)
-        .execute()
-    )
-
-    print(
-        "Updated display name for {} to: {}".format(
-            my_service_account["email"], my_service_account["displayName"]
+    def create(self, name, display_name):
+        """Creates a service account."""
+        account = (
+            self.service.projects()  # pylint: disable=no-member
+            .serviceAccounts()
+            .create(
+                name="projects/" + self.project_id,
+                body={
+                    "accountId": name,
+                    "serviceAccount": {"displayName": display_name},
+                },
+            )
+            .execute()
         )
-    )
-    return my_service_account
+        return f"Service account `{account['email']}` created."
 
+    def rename_service_account(self, email, new_display_name):
+        """Changes a service account's display name."""
+        account = (
+            self.service.projects()  # pylint: disable=no-member
+            .serviceAccounts()
+            .get(name=f"projects/-/serviceAccounts/{email}")
+            .execute()
+        )
 
-def disable_service_account(email):
-    """Disables a service account."""
+        # Then you can update the display name
+        old_display_name = account["displayName"]
+        account["displayName"] = new_display_name
+        account = (
+            service.projects()  # pylint: disable=no-member
+            .serviceAccounts()
+            .update(name=resource, body=account)
+            .execute()
+        )
+        return f"Updated display name of {account['email']} from {old_display_name} to {account['displayName']}"
 
-    service = googleapiclient.discovery.build("iam", "v1",)
+    def disable_service_account(email):
+        """Disables a service account."""
 
-    service.projects().serviceAccounts().disable(  # pylint: disable=no-member
-        name="projects/-/serviceAccounts/" + email
-    ).execute()
+        service = googleapiclient.discovery.build("iam", "v1",)
 
-    print("Disabled service account :" + email)
+        service.projects().serviceAccounts().disable(  # pylint: disable=no-member
+            name="projects/-/serviceAccounts/" + email
+        ).execute()
 
+        print("Disabled service account :" + email)
 
-def enable_service_account(email):
-    """Enables a service account."""
+    def enable_service_account(email):
+        """Enables a service account."""
 
-    service = googleapiclient.discovery.build("iam", "v1")
+        service = googleapiclient.discovery.build("iam", "v1")
 
-    service.projects().serviceAccounts().enable(  # pylint: disable=no-member
-        name="projects/-/serviceAccounts/" + email
-    ).execute()
+        service.projects().serviceAccounts().enable(  # pylint: disable=no-member
+            name="projects/-/serviceAccounts/" + email
+        ).execute()
 
-    print("Disabled service account :" + email)
+        print("Disabled service account :" + email)
 
+    def delete_service_account(email):
+        """Deletes a service account."""
+        service = googleapiclient.discovery.build("iam", "v1")
 
-def delete_service_account(email):
-    """Deletes a service account."""
-    service = googleapiclient.discovery.build("iam", "v1")
+        service.projects().serviceAccounts().delete(  # pylint: disable=no-member
+            name="projects/-/serviceAccounts/" + email
+        ).execute()
 
-    service.projects().serviceAccounts().delete(  # pylint: disable=no-member
-        name="projects/-/serviceAccounts/" + email
-    ).execute()
-
-    print("Deleted service account: " + email)
+        print("Deleted service account: " + email)
 
 
 delete_service_account("sa-test@zetta-lee-fly-vnc-001.iam.gserviceaccount.com")
