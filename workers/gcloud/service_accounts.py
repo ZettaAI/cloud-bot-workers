@@ -1,5 +1,6 @@
-from google.oauth2 import service_account
+import click
 import googleapiclient.discovery
+from google.oauth2 import service_account
 
 
 class ServiceAccountActions:
@@ -85,3 +86,84 @@ class ServiceAccountActions:
             name=f"projects/-/serviceAccounts/{email}"
         ).execute()
         return f"Service account `{email}` deleted."
+
+
+@click.group(
+    "sa",
+    help="List service accounts.",
+    add_help_option=False,
+    invoke_without_command=True,
+)
+@click.option(
+    "--project",
+    "-p",
+    type=str,
+    default="zetta-lee-fly-vnc-001",
+    nargs=1,
+    help="Project name.",
+)
+@click.pass_context
+def service_accounts(ctx, *args, **kwargs):
+    """Group for Service Account commands."""
+    ctx.obj["sa_actions"] = ServiceAccountActions(kwargs["project"])
+    return ctx.obj["sa_actions"].list()
+
+
+@service_accounts.command(
+    "create", help="Create a new service account.", add_help_option=False
+)
+@click.argument("name", type=str)
+@click.argument("display_name", type=str)
+@click.pass_context
+def create(ctx, *args, **kwargs):
+    """Create new service account."""
+    sa_actions = ctx.obj["sa_actions"]
+    return sa_actions.create(*args)
+
+
+@service_accounts.command(
+    "rename", help="Change service account displayname.", add_help_option=False
+)
+@click.argument("email", type=str)
+@click.argument("display_name", type=str)
+@click.pass_context
+def rename(ctx, *args, **kwargs):
+    """Create new service account."""
+    print(kwargs)
+    sa_actions = ctx.obj["sa_actions"]
+    return sa_actions.rename(*args)
+
+
+@service_accounts.command(
+    "disable", help="Disable service account.", add_help_option=False
+)
+@click.argument("email", type=str)
+@click.pass_context
+def disable(ctx, *args, **kwargs):
+    """Disable service account."""
+    print(args)
+    sa_actions = ctx.obj["sa_actions"]
+    return sa_actions.disable(*args)
+
+
+@service_accounts.command(
+    "enable", help="Change service account displayname.", add_help_option=False
+)
+@click.argument("email", type=str)
+@click.pass_context
+def enable(ctx, *args, **kwargs):
+    """Enable service account."""
+    sa_actions = ctx.obj["sa_actions"]
+    return sa_actions.enable(*args)
+
+
+@service_accounts.command(
+    "delete", help="Change service account displayname.", add_help_option=False
+)
+@click.argument("email", type=str)
+@click.pass_context
+def delete(ctx, *args, **kwargs):
+    """Delete service account."""
+    sa_actions = ctx.obj["sa_actions"]
+    return sa_actions.delete(*args)
+
