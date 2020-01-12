@@ -113,7 +113,7 @@ class ServiceAccountActions:
         self.resource.projects().serviceAccounts().keys().delete(
             name=full_key_name
         ).execute()
-        print("Deleted key: " + full_key_name)
+        return f"Deleted {full_key_name}."
 
 
 @click.group(
