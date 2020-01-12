@@ -3,6 +3,7 @@ Display help for avaiable commands.
 """
 from json import dumps
 from json import loads
+from typing import List
 from typing import Union
 from typing import Iterable
 from collections import OrderedDict
@@ -27,7 +28,7 @@ cmd_grps = OrderedDict()
 cmd_grps["gcloud"] = gcloud_grp
 
 
-def _get_help_msg():
+def _get_main_help_msg():
     msg_cmds = "\n".join(f"{cmd}" for cmd in cmd_grps.keys())
     msg = "Following is a list of commands currently available.\n"
     msg += f"```{msg_cmds}```"
@@ -43,13 +44,9 @@ def _get_nested_command(grp: Group, names: Iterable[str]) -> Union[Group, Comman
         return _get_nested_command(child_grp, names[1:])
 
 
-def callback(ch, method, properties, body):
-    event = loads(body)["event"]
-    cmds = event["user_cmd"].split()
-    assert cmds[0] == "help"
-
+def _get_help_msg(cmds: List[str]):
     if len(cmds) == 1:
-        msg = _get_help_msg()
+        return _get_main_help_msg()
     else:
         root_grp_or_cmd = cmd_grps[cmds[1]]
         nested_grp_or_cmd = (
@@ -58,8 +55,19 @@ def callback(ch, method, properties, body):
             else _get_nested_command(root_grp_or_cmd, cmds[2:])
         )
         ctx = Context(nested_grp_or_cmd, info_name=" ".join(cmds[1:]))
-        msg = f"```{nested_grp_or_cmd.get_help(ctx)}```"
+        return f"```{nested_grp_or_cmd.get_help(ctx)}```"
 
+
+def callback(ch, method, properties, body):
+    event = loads(body)["event"]
+    cmds = event["user_cmd"].split()
+    assert cmds[0] == "help"
+
+    try:
+        msg = _get_help_msg(cmds)
+    except Exception as err:
+        msg = ":warning: Something went wrong. Check help to see "
+        msg += f"if your command is properly formatted.\n```{str(err)}```"
     response = SlackResponse(event)
     assert response.send(msg).status_code == codes.ok  # pylint: disable=no-member
 
