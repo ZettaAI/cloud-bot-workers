@@ -92,7 +92,7 @@ class ServiceAccountActions:
             .list(name=f"projects/-/serviceAccounts/{email}")
             .execute()
         )
-        msg = "\n".join(key["name"].split("/")[-1] for key in keys["keys"])
+        msg = "\n".join(f"{key['name']} ({key['keyType']})" for key in keys["keys"])
         return f"```{msg}```"
 
     def create_key(self, email):
@@ -107,6 +107,13 @@ class ServiceAccountActions:
         print("Created key: " + key["name"])
         print(key.items())
         print(base64.b64decode(key["privateKeyData"]))
+
+    def delete_key(self, full_key_name):
+        """Deletes a service account key."""
+        self.resource.projects().serviceAccounts().keys().delete(
+            name=full_key_name
+        ).execute()
+        print("Deleted key: " + full_key_name)
 
 
 @click.group(
@@ -203,4 +210,12 @@ def keys(ctx, *args, **kwargs):
 def create_key(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
     return sa_actions.create_key(ctx.obj["email"])
+
+
+@keys.command("delete", help="Delete service account key.", add_help_option=False)
+@click.argument("full_key_name", type=str)
+@click.pass_context
+def delete_key(ctx, *args, **kwargs):
+    sa_actions = ctx.obj["sa_actions"]
+    return sa_actions.delete_key(*args, **kwargs)
 

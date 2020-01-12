@@ -18,8 +18,8 @@ def invoke_cmd(cmd: str) -> str:
     cmd_grp.parse_args(ctx, cmd.split()[1:])
     try:
         return cmd_grp.invoke(ctx)
-    except MissingParameter:
-        return f":warning: Something went wrong.\n```Missing parameter.```"
+    except MissingParameter as err:
+        return f":warning: Something went wrong.\n```{err.format_message()}```"
     except Exception as err:
         return f":warning: Something went wrong.\n```{err}```"
 
