@@ -121,7 +121,7 @@ def service_accounts(ctx, *args, **kwargs):
 def create(ctx, *args, **kwargs):
     """Create new service account."""
     sa_actions = ctx.obj["sa_actions"]
-    return sa_actions.create(*args)
+    return sa_actions.create(*args, **kwargs)
 
 
 @service_accounts.command(
@@ -132,7 +132,7 @@ def create(ctx, *args, **kwargs):
 @click.pass_context
 def rename(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    return sa_actions.rename(*args)
+    return sa_actions.rename(*args, **kwargs)
 
 
 @service_accounts.command(
@@ -141,8 +141,9 @@ def rename(ctx, *args, **kwargs):
 @click.argument("email", type=str)
 @click.pass_context
 def disable(ctx, *args, **kwargs):
+    print(args, kwargs)
     sa_actions = ctx.obj["sa_actions"]
-    return sa_actions.disable(*args)
+    return sa_actions.disable(*args, **kwargs)
 
 
 @service_accounts.command(
@@ -152,7 +153,7 @@ def disable(ctx, *args, **kwargs):
 @click.pass_context
 def enable(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    return sa_actions.enable(*args)
+    return sa_actions.enable(*args, **kwargs)
 
 
 @service_accounts.command(
@@ -162,5 +163,5 @@ def enable(ctx, *args, **kwargs):
 @click.pass_context
 def delete(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    return sa_actions.delete(*args)
+    return sa_actions.delete(*args, **kwargs)
 
