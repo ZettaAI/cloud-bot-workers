@@ -68,20 +68,49 @@ def iam(ctx, *args, **kwargs):
     type=str,
     required=True,
     nargs=1,
-    help="Email with appropriate prefix. See https://cloud.google.com/iam/docs/overview#cloud-iam-policy",
+    help="Email with appropriate prefix. "
+    "For external users only accounts associated with Gmail will work. "
+    "(cloud.google.com/iam/docs/overview#cloud-iam-policy)",
 )
 @click.pass_context
 def add_bucket_iam_member(ctx, *args, **kwargs):
-    """Add a new member to an IAM Policy"""
+    """
+    Add a new member to an IAM Policy.
+    For users external to the organization, only accounts associated with Gmail will work.
+    """
     name = ctx.obj["name"]
     role = kwargs["role"]
     member = kwargs["member"]
-
-    print(kwargs)
 
     storage_client = storage.Client()
     bucket = storage_client.bucket(name)
     policy = bucket.get_iam_policy()
     policy[role].add(member)
     bucket.set_iam_policy(policy)
-    return f"Added {member} with role {role} to {name}."
+    return f"Added `{member}` with role `{role}` to `{name}`."
+
+
+@iam.command("remove", help="Remove member from an IAM Policy.", add_help_option=False)
+@click.option("--role", "-r", type=str, required=True, nargs=1, help="IAM role.")
+@click.option(
+    "--member",
+    "-m",
+    type=str,
+    required=True,
+    nargs=1,
+    help="Email with appropriate prefix. "
+    "(cloud.google.com/iam/docs/overview#cloud-iam-policy)",
+)
+@click.pass_context
+def remove_bucket_iam_member(ctx, *args, **kwargs):
+    """Remove member from bucket IAM Policy."""
+    name = ctx.obj["name"]
+    role = kwargs["role"]
+    member = kwargs["member"]
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(name)
+    policy = bucket.get_iam_policy()
+    policy[role].discard(member)
+    bucket.set_iam_policy(policy)
+    return f"Removed `{member}` with role `{role}` from `{name}`."
