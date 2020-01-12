@@ -36,6 +36,7 @@ def invoke_cmd(cmd: str) -> str:
 
 def callback(ch, method, properties, body):
     event = loads(body)["event"]
+    print(dumps(event, indent=2))
     msg = invoke_cmd(event["user_cmd"])
     response = SlackResponse(event)
     assert response.send(msg).status_code == codes.ok  # pylint: disable=no-member
