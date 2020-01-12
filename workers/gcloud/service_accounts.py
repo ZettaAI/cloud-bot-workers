@@ -98,9 +98,10 @@ class ServiceAccountActions:
     "--project",
     "-p",
     type=str,
-    default="zetta-lee-fly-vnc-001",
+    default=lambda: os.environ["DEFAULT_PROJECT"],
     nargs=1,
     help="Project name.",
+    show_default=True,
 )
 @click.pass_context
 def service_accounts(ctx, *args, **kwargs):
