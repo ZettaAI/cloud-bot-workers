@@ -29,6 +29,10 @@ cmd_grps["gcloud"] = gcloud_grp
 
 
 def _get_main_help_msg():
+    """
+    Main help message when user types `help`.
+    List of available commands registered in `cmd_grps`.
+    """
     msg_cmds = "\n".join(f"{cmd}" for cmd in cmd_grps.keys())
     msg = "Following is a list of commands currently available.\n"
     msg += f"```{msg_cmds}```"
@@ -37,6 +41,7 @@ def _get_main_help_msg():
 
 
 def _get_nested_command(grp: Group, names: Iterable[str]) -> Union[Group, Command]:
+    """Recursively find nested command and get it's help."""
     if len(names) == 1:
         return grp.get_command(Context(grp, info_name=grp.name), names[0])
     else:
@@ -45,6 +50,7 @@ def _get_nested_command(grp: Group, names: Iterable[str]) -> Union[Group, Comman
 
 
 def _get_help_msg(cmds: List[str]):
+    """Returns main or nested help message."""
     if len(cmds) == 1:
         return _get_main_help_msg()
     else:
@@ -59,6 +65,10 @@ def _get_help_msg(cmds: List[str]):
 
 
 def callback(ch, method, properties, body):
+    """
+    Entrypoint for the `help` worker.
+    It can be started with `python -m workers.help`.
+    """
     event = loads(body)["event"]
     cmds = event["user_cmd"].split()
     assert cmds[0] == "help"

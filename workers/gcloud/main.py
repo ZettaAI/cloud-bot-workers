@@ -11,19 +11,6 @@ from .. import config
 from .. import amqp_cnxn
 from ..slack import Response as SlackResponse
 
-# TODO
-# design as plugins that can be "registered"
-# each plugin should perform a task, must have a help description
-# plugins planned
-#   1. view projects
-#   2. view/create/delete buckets
-#      support parameters like zone and region
-#   3. view permissions
-#   4. change permissions?
-#   5. transfer between buckets
-# Needs topics for each category and one for help
-# Worker can return information regarding help command
-
 
 def invoke_cmd(cmd: str) -> str:
     ctx = Context(cmd_grp, info_name=cmd_grp.name, obj={})
