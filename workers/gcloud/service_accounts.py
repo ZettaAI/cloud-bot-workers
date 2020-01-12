@@ -23,7 +23,7 @@ class ServiceAccountActions:
             .list(name="projects/" + self.project_id)
             .execute()
         )
-        msg = "\n".join([f"{_['name']}{_['email']}" for _ in sa["accounts"]])
+        msg = "\n".join([f"{_['email']}" for _ in sa["accounts"]])
         return f"```{msg}```"
 
     def create(self, name, display_name):
@@ -61,8 +61,9 @@ class ServiceAccountActions:
             .update(name=resource_name, body=account)
             .execute()
         )
-        return f"Updated display name of `{account['email']}` \
-            from `{old_display_name}` to `{account['displayName']}`"
+        msg = f"Updated display name of `{account['email']}`"
+        msg = f"{msg} from `{old_display_name}` to `{account['displayName']}`"
+        return msg
 
     def disable(self, email):
         """Disables a service account."""
