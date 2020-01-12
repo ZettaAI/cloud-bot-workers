@@ -27,7 +27,14 @@ def lookup(ctx, *args, **kwargs):
     bucket = storage.Client().lookup_bucket(kwargs["name"])
     if not bucket:
         return f"Bucket `{bucket.name}` does not exist."
-    return f"Bucket `{bucket.name}` exists."
+
+    properties = [f"Owner: {bucket.owner}"]
+    properties.append(f"Created: {bucket.time_created}")
+    properties.append(f"Location: {bucket.location}")
+    properties.append(f"Location Type: {bucket.location_type}")
+    properties.append(f"Storage Class: {bucket.storage_class}")
+    msg = "\n".join(properties)
+    return f"```{msg}```"
 
 
 @bucket.command("iam", help="View IAM Policy for a bucket.", add_help_option=False)
