@@ -127,7 +127,27 @@ class ServiceAccountActions:
         self.resource.projects().serviceAccounts().keys().delete(
             name=full_key_name
         ).execute()
-        return f"Deleted {full_key_name}."
+        return f"Deleted `{full_key_name}`."
+
+
+################
+# Util functions
+################
+
+
+def _get_email(sa_actions, **kwargs) -> str:
+    ERR = "Either NAME or EMAIL of service account is required."
+    assert kwargs["email"] or kwargs["name"], ERR
+    return (
+        kwargs["email"]
+        if kwargs["email"]
+        else utils.get_sa_email(kwargs["name"], sa_actions.project_id)
+    )
+
+
+##########################
+# SERVICE ACCOUNT COMMANDS
+##########################
 
 
 @click.group(
@@ -156,58 +176,73 @@ def service_accounts(ctx, *args, **kwargs):
     "create", help="Create a new service account.", add_help_option=False
 )
 @click.argument("name", type=str)
-@click.argument("display_name", type=str)
+@click.argument("display_name", type=str, required=False)
 @click.pass_context
 def create(ctx, *args, **kwargs):
     """Create new service account."""
+    kwargs["display_name"] = (
+        kwargs["display_name"] if kwargs["display_name"] else kwargs["name"]
+    )
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.create(*args, **kwargs)
 
 
 @service_accounts.command(
-    "rename", help="Change service account displayname.", add_help_option=False
+    "rename", help="Change service account display_name.", add_help_option=False
 )
-@click.argument("name", type=str)
+@click.argument("name", type=str, required=False)
+@click.option(
+    "--email", "-e", type=str, help="Service account email.",
+)
 @click.argument("display_name", type=str)
 @click.pass_context
 def rename(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
-    return sa_actions.rename(*args, **kwargs)
+    return sa_actions.rename(_get_email(sa_actions, **kwargs))
 
 
 @service_accounts.command(
     "disable", help="Disable service account.", add_help_option=False
 )
-@click.argument("name", type=str)
+@click.argument("name", type=str, required=False)
+@click.option(
+    "--email", "-e", type=str, help="Service account email.",
+)
 @click.pass_context
 def disable(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
-    return sa_actions.disable(*args, **kwargs)
+    return sa_actions.disable(_get_email(sa_actions, **kwargs))
 
 
 @service_accounts.command(
     "enable", help="Enable service account.", add_help_option=False
 )
-@click.argument("name", type=str)
+@click.argument("name", type=str, required=False)
+@click.option(
+    "--email", "-e", type=str, help="Service account email.",
+)
 @click.pass_context
 def enable(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
-    return sa_actions.enable(*args, **kwargs)
+    return sa_actions.enable(_get_email(sa_actions, **kwargs))
 
 
 @service_accounts.command(
     "delete", help="Delete service account.", add_help_option=False
 )
-@click.argument("name", type=str)
+@click.argument("name", type=str, required=False)
+@click.option(
+    "--email", "-e", type=str, help="Service account email.",
+)
 @click.pass_context
 def delete(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
-    return sa_actions.delete(*args, **kwargs)
+    return sa_actions.delete(_get_email(sa_actions, **kwargs))
+
+
+##############################
+# SERVICE ACCOUNT KEY COMMANDS
+##############################
 
 
 @service_accounts.group(
@@ -216,13 +251,15 @@ def delete(ctx, *args, **kwargs):
     add_help_option=False,
     invoke_without_command=True,
 )
-@click.argument("name", type=str)
+@click.argument("name", type=str, required=False)
+@click.option(
+    "--email", "-e", type=str, help="Service account email.",
+)
 @click.pass_context
 def keys(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
+    kwargs["email"] = _get_email(sa_actions, **kwargs)
     ctx.obj["email"] = kwargs["email"]
-    ctx.obj["name"] = kwargs["name"]
     return sa_actions.list_keys(ctx.obj["email"])
 
 
@@ -239,7 +276,7 @@ def create_key(ctx, *args, **kwargs):
 def delete_key(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
     full_key_name = utils.get_sa_full_key_name(
-        ctx.obj["name"], sa_actions.project_id, kwargs["key_id"]
+        ctx.obj["email"], sa_actions.project_id, kwargs["key_id"]
     )
     return sa_actions.delete_key(full_key_name)
 
