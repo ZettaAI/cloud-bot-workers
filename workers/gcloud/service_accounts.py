@@ -7,6 +7,8 @@ import googleapiclient.discovery
 from google.oauth2 import service_account
 from cloudvolume.storage import SimpleStorage
 
+from .utils import generate_signed_url
+
 
 class ServiceAccountActions:
     def __init__(self, project_id):
@@ -105,17 +107,20 @@ class ServiceAccountActions:
             .create(name=f"projects/-/serviceAccounts/{email}", body={})
             .execute()
         )
-        with SimpleStorage("gs://cloud-bot/keys") as storage:
+        bucket_name = "cloud-bot"
+        bucket_gs = f"gs://{bucket_name}/keys"
+        key_file = f"{key['name']}.json"
+        with SimpleStorage(bucket_gs) as storage:
             storage.put_file(
-                file_path=f"{key['name']}.json",
+                file_path=key_file,
                 content=base64.b64decode(key["privateKeyData"]),
                 compress=None,
                 cache_control="no-cache",
             )
-        storage_url = "https://console.cloud.google.com/storage/browser"
-        key_link = f"{storage_url}/cloud-bot/keys/{key['name']}"
-        print(key_link)
-        return f"Key created `{key['name'].split('/')[-1]}`.\nDownload at {key_link}."
+
+        url = generate_signed_url(bucket_name, f"keys/{key_file}")
+        msg = f"Key created `{key['name'].split('/')[-1]}`."
+        return f"{msg}\nAvailable <{url}|here> (link valid for 60s)."
 
     def delete_key(self, full_key_name):
         """Deletes a service account key."""
