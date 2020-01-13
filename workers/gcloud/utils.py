@@ -15,6 +15,11 @@ def get_sa_email(name: str, project: str) -> str:
     return f"{name}@{project}.iam.gserviceaccount.com"
 
 
+def get_sa_full_key_name(sa_name: str, project: str, key_id: str) -> str:
+    path = f"projects/{project}/serviceAccounts"
+    return f"{path}/{get_sa_email(sa_name, project)}/keys/{key_id}"
+
+
 def generate_signed_url(
     bucket_name,
     object_name,

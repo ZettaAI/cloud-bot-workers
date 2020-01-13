@@ -7,8 +7,7 @@ import googleapiclient.discovery
 from google.oauth2 import service_account
 from cloudvolume.storage import SimpleStorage
 
-from .utils import get_sa_email
-from .utils import generate_signed_url
+from . import utils
 
 
 class ServiceAccountActions:
@@ -119,7 +118,7 @@ class ServiceAccountActions:
                 cache_control="no-cache",
             )
 
-        url = generate_signed_url(bucket_name, f"keys/{key_file}")
+        url = utils.generate_signed_url(bucket_name, f"keys/{key_file}")
         msg = f"Key created `{key['name'].split('/')[-1]}`."
         return f"{msg}\nAvailable <{url}|here> (link valid for 60s)."
 
@@ -162,7 +161,7 @@ def service_accounts(ctx, *args, **kwargs):
 def create(ctx, *args, **kwargs):
     """Create new service account."""
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
+    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.create(*args, **kwargs)
 
 
@@ -174,7 +173,7 @@ def create(ctx, *args, **kwargs):
 @click.pass_context
 def rename(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
+    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.rename(*args, **kwargs)
 
 
@@ -185,7 +184,7 @@ def rename(ctx, *args, **kwargs):
 @click.pass_context
 def disable(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
+    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.disable(*args, **kwargs)
 
 
@@ -196,7 +195,7 @@ def disable(ctx, *args, **kwargs):
 @click.pass_context
 def enable(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
+    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.enable(*args, **kwargs)
 
 
@@ -207,7 +206,7 @@ def enable(ctx, *args, **kwargs):
 @click.pass_context
 def delete(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
+    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.delete(*args, **kwargs)
 
 
@@ -221,9 +220,10 @@ def delete(ctx, *args, **kwargs):
 @click.pass_context
 def keys(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
+    kwargs["email"] = utils.get_sa_email(kwargs["name"], sa_actions.project_id)
     ctx.obj["email"] = kwargs["email"]
-    return sa_actions.list_keys(*args, **kwargs)
+    ctx.obj["name"] = kwargs["name"]
+    return sa_actions.list_keys(ctx.obj["email"])
 
 
 @keys.command("create", help="Create service account key.", add_help_option=False)
@@ -234,9 +234,12 @@ def create_key(ctx, *args, **kwargs):
 
 
 @keys.command("delete", help="Delete service account key.", add_help_option=False)
-@click.argument("full_key_name", type=str)
+@click.argument("key_id", type=str)
 @click.pass_context
 def delete_key(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    return sa_actions.delete_key(*args, **kwargs)
+    full_key_name = utils.get_sa_full_key_name(
+        ctx.obj["name"], sa_actions.project_id, kwargs["key_id"]
+    )
+    return sa_actions.delete_key(full_key_name)
 
