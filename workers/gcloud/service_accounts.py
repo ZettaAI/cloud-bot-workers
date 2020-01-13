@@ -7,6 +7,7 @@ import googleapiclient.discovery
 from google.oauth2 import service_account
 from cloudvolume.storage import SimpleStorage
 
+from .utils import get_sa_email
 from .utils import generate_signed_url
 
 
@@ -161,47 +162,52 @@ def service_accounts(ctx, *args, **kwargs):
 def create(ctx, *args, **kwargs):
     """Create new service account."""
     sa_actions = ctx.obj["sa_actions"]
+    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.create(*args, **kwargs)
 
 
 @service_accounts.command(
     "rename", help="Change service account displayname.", add_help_option=False
 )
-@click.argument("email", type=str)
+@click.argument("name", type=str)
 @click.argument("display_name", type=str)
 @click.pass_context
 def rename(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
+    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.rename(*args, **kwargs)
 
 
 @service_accounts.command(
     "disable", help="Disable service account.", add_help_option=False
 )
-@click.argument("email", type=str)
+@click.argument("name", type=str)
 @click.pass_context
 def disable(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
+    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.disable(*args, **kwargs)
 
 
 @service_accounts.command(
     "enable", help="Enable service account.", add_help_option=False
 )
-@click.argument("email", type=str)
+@click.argument("name", type=str)
 @click.pass_context
 def enable(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
+    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.enable(*args, **kwargs)
 
 
 @service_accounts.command(
     "delete", help="Delete service account.", add_help_option=False
 )
-@click.argument("email", type=str)
+@click.argument("name", type=str)
 @click.pass_context
 def delete(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
+    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
     return sa_actions.delete(*args, **kwargs)
 
 
@@ -211,10 +217,11 @@ def delete(ctx, *args, **kwargs):
     add_help_option=False,
     invoke_without_command=True,
 )
-@click.argument("email", type=str)
+@click.argument("name", type=str)
 @click.pass_context
 def keys(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
+    kwargs["email"] = get_sa_email(kwargs["name"], sa_actions.project_id)
     ctx.obj["email"] = kwargs["email"]
     return sa_actions.list_keys(*args, **kwargs)
 

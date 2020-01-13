@@ -11,6 +11,10 @@ from six.moves.urllib.parse import quote
 from google.oauth2 import service_account
 
 
+def get_sa_email(name: str, project: str) -> str:
+    return f"{name}@{project}.iam.gserviceaccount.com"
+
+
 def generate_signed_url(
     bucket_name,
     object_name,
