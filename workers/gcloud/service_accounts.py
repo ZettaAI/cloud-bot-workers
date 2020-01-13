@@ -5,6 +5,7 @@ import base64
 import click
 import googleapiclient.discovery
 from google.oauth2 import service_account
+from cloudvolume.storage import SimpleStorage
 
 
 class ServiceAccountActions:
@@ -104,9 +105,17 @@ class ServiceAccountActions:
             .create(name=f"projects/-/serviceAccounts/{email}", body={})
             .execute()
         )
-        print("Created key: " + key["name"])
-        print(key.items())
-        print(base64.b64decode(key["privateKeyData"]))
+        with SimpleStorage("gs://cloud-bot/keys") as storage:
+            storage.put_file(
+                file_path=f"{key['name']}.json",
+                content=base64.b64decode(key["privateKeyData"]),
+                compress=None,
+                cache_control="no-cache",
+            )
+        storage_url = "https://console.cloud.google.com/storage/browser"
+        key_link = f"{storage_url}/cloud-bot/keys/{key['name']}"
+        print(key_link)
+        return f"Key created `{key['name'].split('/')[-1]}`.\nDownload at {key_link}."
 
     def delete_key(self, full_key_name):
         """Deletes a service account key."""
