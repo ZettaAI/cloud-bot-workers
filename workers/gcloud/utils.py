@@ -24,7 +24,7 @@ def generate_signed_url(
     bucket_name,
     object_name,
     subresource=None,
-    expiration=60,
+    expiration=int(os.environ["KEY_LINK_EXPIRATION"]),
     http_method="GET",
     query_parameters=None,
     headers=None,

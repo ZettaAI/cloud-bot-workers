@@ -120,7 +120,8 @@ class ServiceAccountActions:
 
         url = utils.generate_signed_url(bucket_name, f"keys/{key_file}")
         msg = f"Key created `{key['name'].split('/')[-1]}`."
-        return f"{msg}\nAvailable <{url}|here> (link valid for 60s)."
+        msg = f"{msg}\nAvailable <{url}|here> (link valid for"
+        return f"{msg} {int(os.environ['KEY_LINK_EXPIRATION'])/60}m)."
 
     def delete_key(self, full_key_name):
         """Deletes a service account key."""
@@ -135,7 +136,7 @@ class ServiceAccountActions:
 ################
 
 
-def _get_email(sa_actions, **kwargs) -> str:
+def _get_email(sa_actions: ServiceAccountActions, **kwargs) -> str:
     ERR = "Either NAME or EMAIL of service account is required."
     assert kwargs["email"] or kwargs["name"], ERR
     return (
@@ -271,14 +272,17 @@ def create_key(ctx, *args, **kwargs):
 
 
 def _get_full_key_name(
-    sa_email: str, sa_actions: ServiceAccountActions, kwargs: dict
+    sa_email: str, sa_actions: ServiceAccountActions, **kwargs
 ) -> str:
-    try:
-        return kwargs["full_key_name"]
-    except KeyError:
-        return utils.get_sa_full_key_name(
+    ERR = "Either FULL_KEY_NAME or KEY_ID is required."
+    assert kwargs["full_key_name"] or kwargs["key_id"], ERR
+    return (
+        kwargs["full_key_name"]
+        if kwargs["full_key_name"]
+        else utils.get_sa_full_key_name(
             sa_email, sa_actions.project_id, kwargs["key_id"]
         )
+    )
 
 
 @keys.command("delete", help="Delete service account key.", add_help_option=False)
@@ -306,7 +310,7 @@ def delete_key(ctx, *args, **kwargs):
     "--expires",
     "-x",
     type=int,
-    help="Timeout for link expiration.",
+    help="Timeout for link expiration in seconds.",
     default=lambda: os.environ["KEY_LINK_EXPIRATION"],
     show_default=os.environ["KEY_LINK_EXPIRATION"],
     nargs=1,
@@ -319,5 +323,5 @@ def get_link(ctx, *args, **kwargs):
     url = utils.generate_signed_url(
         os.environ["KEY_FILES_BUCKET"], f"keys/{key_file}", expiration=kwargs["expires"]
     )
-    return f"Download key <{url}|here> (link valid for {kwargs['expires']/60}m)."
+    return f"Download key <{url}|here> (link valid for {kwargs['expires']//60}m)."
 
