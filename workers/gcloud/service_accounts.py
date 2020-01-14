@@ -107,7 +107,7 @@ class ServiceAccountActions:
             .create(name=f"projects/-/serviceAccounts/{email}", body={})
             .execute()
         )
-        bucket_name = "cloud-bot"
+        bucket_name = os.environ["KEY_FILES_BUCKET"]
         bucket_gs = f"gs://{bucket_name}/keys"
         key_file = f"{key['name']}.json"
         with SimpleStorage(bucket_gs) as storage:
@@ -160,9 +160,9 @@ def _get_email(sa_actions, **kwargs) -> str:
     "--project",
     "-p",
     type=str,
-    default=lambda: os.environ["DEFAULT_PROJECT"],
     nargs=1,
     help="Project name.",
+    default=lambda: os.environ["DEFAULT_PROJECT"],
     show_default=os.environ["DEFAULT_PROJECT"],
 )
 @click.pass_context
@@ -270,13 +270,54 @@ def create_key(ctx, *args, **kwargs):
     return sa_actions.create_key(ctx.obj["email"])
 
 
+def _get_full_key_name(
+    sa_email: str, sa_actions: ServiceAccountActions, kwargs: dict
+) -> str:
+    try:
+        return kwargs["full_key_name"]
+    except KeyError:
+        return utils.get_sa_full_key_name(
+            sa_email, sa_actions.project_id, kwargs["key_id"]
+        )
+
+
 @keys.command("delete", help="Delete service account key.", add_help_option=False)
-@click.argument("key_id", type=str)
+@click.argument("key_id", type=str, required=False)
+@click.option(
+    "--full-key-name", "-f", type=str, help="Full key name.",
+)
 @click.pass_context
 def delete_key(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
-    full_key_name = utils.get_sa_full_key_name(
-        ctx.obj["email"], sa_actions.project_id, kwargs["key_id"]
-    )
+    full_key_name = _get_full_key_name(ctx.obj["email"], sa_actions, **kwargs)
     return sa_actions.delete_key(full_key_name)
+
+
+@keys.command(
+    "get_link",
+    help="Get temporary signed download link for key file.",
+    add_help_option=False,
+)
+@click.argument("key_id", type=str, required=False)
+@click.option(
+    "--full-key-name", "-f", type=str, help="Full key name.",
+)
+@click.option(
+    "--expires",
+    "-x",
+    type=int,
+    help="Timeout for link expiration.",
+    default=lambda: os.environ["KEY_LINK_EXPIRATION"],
+    show_default=os.environ["KEY_LINK_EXPIRATION"],
+    nargs=1,
+)
+@click.pass_context
+def get_link(ctx, *args, **kwargs):
+    sa_actions = ctx.obj["sa_actions"]
+    full_key_name = _get_full_key_name(ctx.obj["email"], sa_actions, **kwargs)
+    key_file = f"{full_key_name}.json"
+    url = utils.generate_signed_url(
+        os.environ["KEY_FILES_BUCKET"], f"keys/{key_file}", expiration=kwargs["expires"]
+    )
+    return f"Download key <{url}|here> (link valid for {kwargs['expires']/60}m)."
 
