@@ -1,10 +1,10 @@
 from json import dumps
 from json import loads
 
-from click import Context
-from click.exceptions import MissingParameter
 from requests import post
 from requests import codes
+from click import Context
+from click.exceptions import MissingParameter
 
 from . import cmd_grp
 from . import ROUTING_KEY

@@ -146,6 +146,20 @@ def _get_email(sa_actions: ServiceAccountActions, **kwargs) -> str:
     )
 
 
+def _get_full_key_name(
+    sa_email: str, sa_actions: ServiceAccountActions, **kwargs
+) -> str:
+    ERR = "Either FULL_KEY_NAME or KEY_ID is required."
+    assert kwargs["full_key_name"] or kwargs["key_id"], ERR
+    return (
+        kwargs["full_key_name"]
+        if kwargs["full_key_name"]
+        else utils.get_sa_full_key_name(
+            sa_email, sa_actions.project_id, kwargs["key_id"]
+        )
+    )
+
+
 ##########################
 # SERVICE ACCOUNT COMMANDS
 ##########################
@@ -269,20 +283,6 @@ def keys(ctx, *args, **kwargs):
 def create_key(ctx, *args, **kwargs):
     sa_actions = ctx.obj["sa_actions"]
     return sa_actions.create_key(ctx.obj["email"])
-
-
-def _get_full_key_name(
-    sa_email: str, sa_actions: ServiceAccountActions, **kwargs
-) -> str:
-    ERR = "Either FULL_KEY_NAME or KEY_ID is required."
-    assert kwargs["full_key_name"] or kwargs["key_id"], ERR
-    return (
-        kwargs["full_key_name"]
-        if kwargs["full_key_name"]
-        else utils.get_sa_full_key_name(
-            sa_email, sa_actions.project_id, kwargs["key_id"]
-        )
-    )
 
 
 @keys.command("delete", help="Delete service account key.", add_help_option=False)
