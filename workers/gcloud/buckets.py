@@ -1,5 +1,5 @@
 import click
-from google.cloud import storage
+from google.cloud.storage import Client
 
 
 PREDEFINED_BUKCET_IAM_ROLES = {
@@ -11,16 +11,17 @@ PREDEFINED_BUKCET_IAM_ROLES = {
 
 @click.command("buckets", help="List avialable buckets.", add_help_option=False)
 def list(ctx, *args, **kwargs):
-    bucket = storage.Client().list_buckets()
-    return f"Bucket `{bucket.name}` created."
+    bucket = Client(project=ctx.obj.get("project", None)).list_buckets()
+    print(bucket)
 
 
 @click.group("bucket", help="Actions related to buckets.", add_help_option=False)
 @click.argument("name", type=str)
 @click.pass_context
 def bucket(ctx, *args, **kwargs):
-    ctx.obj["name"] = kwargs["name"]
     """Group for bucket commands."""
+    ctx.obj["client"] = Client(project=ctx.obj.get("project", None))
+    ctx.obj["name"] = kwargs["name"]
 
 
 ###################
@@ -31,14 +32,14 @@ def bucket(ctx, *args, **kwargs):
 @bucket.command("create", help="Creates a bucket.", add_help_option=False)
 @click.pass_context
 def create(ctx, *args, **kwargs):
-    bucket = storage.Client().create_bucket(ctx.obj["name"])
+    bucket = ctx.obj["client"].create_bucket(ctx.obj["name"])
     return f"Bucket `{bucket.name}` created."
 
 
 @bucket.command("lookup", help="Checks if a bucket exisits.", add_help_option=False)
 @click.pass_context
 def lookup(ctx, *args, **kwargs):
-    bucket = storage.Client().lookup_bucket(ctx.obj["name"])
+    bucket = ctx.obj["client"].lookup_bucket(ctx.obj["name"])
     if not bucket:
         return f"Bucket `{bucket.name}` does not exist."
 
@@ -67,8 +68,7 @@ def _get_roles(**kwargs):
 
 
 def _bucket_iam_helper(bucket_name: str, member: str, roles: list, add: bool = True):
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
+    bucket = ctx.obj["client"].bucket(bucket_name)
     policy = bucket.get_iam_policy()
 
     msg = []
@@ -102,8 +102,7 @@ def iam(ctx, *args, **kwargs):
     Group for bucket IAM commands.
     Lists current IAM roles and members.
     """
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(ctx.obj["name"])
+    bucket = ctx.obj["client"].bucket(ctx.obj["name"])
     policy = bucket.get_iam_policy()
     msg = "\n".join(f"Role: {k}, members: {v}" for k, v in policy.items())
     return f"```{msg}```"

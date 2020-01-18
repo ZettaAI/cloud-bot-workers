@@ -171,15 +171,6 @@ def _get_full_key_name(
     add_help_option=False,
     invoke_without_command=True,
 )
-@click.option(
-    "--project",
-    "-p",
-    type=str,
-    nargs=1,
-    help="Project name.",
-    default=lambda: os.environ["DEFAULT_PROJECT"],
-    show_default=os.environ["DEFAULT_PROJECT"],
-)
 @click.pass_context
 def service_accounts(ctx, *args, **kwargs):
     """Group for Service Account commands."""
