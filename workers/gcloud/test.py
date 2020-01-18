@@ -21,12 +21,12 @@ keys https://stackoverflow.com/questions/44291205/iam-service-account-key-vs-goo
 
 from click import Context
 
-from . import cmd_grp
+from . import gcloud
 
 
 cmd = "gcloud bucket iam -n akhilesh-test-1"
 cmd = "gcloud bucket iam -n akhilesh-test-1 add -r roles/storage.objectViewer -m user:akhileshhalageri@gmail.com"
-ctx = Context(cmd_grp, info_name=cmd_grp.name, obj={})
-cmd_grp.parse_args(ctx, cmd.split()[1:])
-cmd_grp.invoke(ctx)
+ctx = Context(gcloud, info_name=gcloud.name, obj={})
+gcloud.parse_args(ctx, cmd.split()[1:])
+gcloud.invoke(ctx)
 

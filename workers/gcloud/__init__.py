@@ -3,9 +3,7 @@ Workers for doing stuff on gcloud.
 """
 import os
 
-from click import Group
-from click import Context
-from click import Option
+import click
 
 from .buckets import bucket as bucket_grp
 from .service_accounts import service_accounts as sa_grp
@@ -13,7 +11,11 @@ from .service_accounts import service_accounts as sa_grp
 ROUTING_KEY = "gcloud.#"
 
 
-@click.group("gcloud", help="Type help gcloud <subcommand> for information.",, add_help_option=False)
+@click.group(
+    "gcloud",
+    help="Type help gcloud <subcommand> for information.",
+    add_help_option=False,
+)
 @click.option(
     "--project",
     "-p",
@@ -26,6 +28,7 @@ ROUTING_KEY = "gcloud.#"
 @click.pass_context
 def gcloud(ctx, *args, **kwargs):
     ctx.obj["project"] = kwargs["project"]
+
 
 gcloud.add_command(bucket_grp)
 gcloud.add_command(sa_grp)

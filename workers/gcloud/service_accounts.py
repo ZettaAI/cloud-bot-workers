@@ -13,7 +13,7 @@ from . import utils
 class ServiceAccountActions:
     def __init__(self, project_id):
         self._project_id = project_id
-        self._resource = googleapiclient.discovery.build("iam", "v1",)
+        self._resource = googleapiclient.discovery.build("iam", "v1")
 
     @property
     def resource(self):
