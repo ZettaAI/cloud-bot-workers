@@ -9,6 +9,12 @@ PREDEFINED_BUKCET_IAM_ROLES = {
 }
 
 
+@click.command("buckets", help="List avialable buckets.", add_help_option=False)
+def list(ctx, *args, **kwargs):
+    bucket = storage.Client().list_buckets()
+    return f"Bucket `{bucket.name}` created."
+
+
 @click.group("bucket", help="Actions related to buckets.", add_help_option=False)
 @click.argument("name", type=str)
 @click.pass_context
@@ -30,7 +36,6 @@ def create(ctx, *args, **kwargs):
 
 
 @bucket.command("lookup", help="Checks if a bucket exisits.", add_help_option=False)
-@click.argument("name", type=str)
 @click.pass_context
 def lookup(ctx, *args, **kwargs):
     bucket = storage.Client().lookup_bucket(ctx.obj["name"])

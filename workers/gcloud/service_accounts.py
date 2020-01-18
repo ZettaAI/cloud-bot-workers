@@ -183,7 +183,7 @@ def _get_full_key_name(
 @click.pass_context
 def service_accounts(ctx, *args, **kwargs):
     """Group for Service Account commands."""
-    ctx.obj["sa_actions"] = ServiceAccountActions(kwargs["project"])
+    ctx.obj["sa_actions"] = ServiceAccountActions(ctx.obj["project"])
     return ctx.obj["sa_actions"].list()
 
 
