@@ -6,22 +6,22 @@ from requests import codes
 from click import Context
 from click.exceptions import MissingParameter
 
-from . import cmd_grp
 from . import ROUTING_KEY
+from . import gcloud as cmd_grp
 from .. import config
 from .. import amqp_cnxn
 from ..slack import Response as SlackResponse
 
 
 def invoke_cmd(cmd: str) -> str:
-    ctx = Context(cmd_grp, info_name=cmd_grp.name, obj={})
-    cmd_grp.parse_args(ctx, cmd.split()[1:])
     try:
+        ctx = Context(cmd_grp, info_name=cmd_grp.name, obj={})
+        cmd_grp.parse_args(ctx, cmd.split()[1:])
         return cmd_grp.invoke(ctx)
     except MissingParameter as err:
         return f":warning: Something went wrong.\n```{err.format_message()}```"
     except Exception as err:
-        return f":warning: Something went wrong.\n```{err}```"
+        return f":warning: Something went wrong. Check `help`.\n```{err}```"
 
 
 def callback(ch, method, properties, body):

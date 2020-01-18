@@ -11,9 +11,11 @@ PREDEFINED_BUKCET_IAM_ROLES = {
 
 
 @click.command("buckets", help="List avialable buckets.", add_help_option=False)
-def list(ctx, *args, **kwargs):
-    bucket = Client(project=ctx.obj.get("project", None)).list_buckets()
-    print(bucket)
+@click.pass_context
+def buckets(ctx, *args, **kwargs):
+    buckets = Client(project=ctx.obj.get("project", None)).list_buckets()
+    msg = "\n".join(bucket.name for bucket in buckets)
+    return f"```{msg}```"
 
 
 @click.group("bucket", help="Actions related to buckets.", add_help_option=False)

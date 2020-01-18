@@ -6,6 +6,7 @@ import os
 import click
 
 from .buckets import bucket as bucket_grp
+from .buckets import buckets as buckets_grp
 from .service_accounts import service_accounts as sa_grp
 
 ROUTING_KEY = "gcloud.#"
@@ -31,5 +32,6 @@ def gcloud(ctx, *args, **kwargs):
 
 
 gcloud.add_command(bucket_grp)
+gcloud.add_command(buckets_grp)
 gcloud.add_command(sa_grp)
 

@@ -19,7 +19,7 @@ from . import config
 from . import amqp_cnxn
 from .slack import Response as SlackResponse
 
-from .gcloud import cmd_grp as gcloud_grp
+from .gcloud import gcloud as gcloud_grp
 
 ROUTING_KEY = "help.#"
 cmd_grps = OrderedDict()
