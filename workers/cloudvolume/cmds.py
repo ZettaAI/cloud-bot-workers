@@ -12,7 +12,7 @@ from cloudvolume import Storage
 @click.option(
     "--n-threads",
     "-n",
-    type=str,
+    type=int,
     required=False,
     nargs=1,
     help="Number of threads to perform the operation.",
@@ -34,10 +34,13 @@ def storage(ctx, *args, **kwargs):
 @click.argument("dst_path", type=str, required=True)
 @click.pass_context
 def copy(ctx, *args, **kwargs):
-    with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"],) as src, Storage(
-        kwargs["dst_path"], n_threads=ctx.obj["n_threads"],
+    with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"]) as src, Storage(
+        kwargs["dst_path"], n_threads=ctx.obj["n_threads"]
     ) as dst:
-        dst.put_files(src.get_files(src.list_files()))  # pylint: disable=no-member
+        files = src.list_files(flat=True)
+        contents = src.get_files(files)
+        print(list(files), src._layer_path)
+        dst.put_files(zip(files, contents))  # pylint: disable=no-member
     return f"Copied files from `{kwargs['src_path']}` to `{kwargs['dst_path']}`"
 
 
@@ -52,8 +55,8 @@ def copy(ctx, *args, **kwargs):
 @click.argument("dst_path", type=str, required=True)
 @click.pass_context
 def move(ctx, *args, **kwargs):
-    with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"],) as src, Storage(
-        kwargs["dst_path"], n_threads=ctx.obj["n_threads"],
+    with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"]) as src, Storage(
+        kwargs["dst_path"], n_threads=ctx.obj["n_threads"]
     ) as dst:
         files = src.list_files()
         dst.put_files(src.get_files(files))  # pylint: disable=no-member
