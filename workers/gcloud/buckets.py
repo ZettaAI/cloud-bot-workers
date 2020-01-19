@@ -32,7 +32,7 @@ def bucket(ctx, *args, **kwargs):
     ctx.obj["name"] = kwargs["name"]
     bucket = ctx.obj["client"].lookup_bucket(ctx.obj["name"])
     if not bucket:
-        return f"Bucket `{bucket.name}` does not exist."
+        return f"Bucket `{ctx.obj['name']}` does not exist."
 
     properties = [f"Owner: {bucket.owner}"]
     properties.append(f"Created: {bucket.time_created}")
