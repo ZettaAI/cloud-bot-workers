@@ -89,4 +89,4 @@ def delete(ctx, *args, **kwargs):
     proc = run(cmd, capture_output=True)
     if proc.returncode:
         raise ValueError(proc.stderr.decode("utf-8"))
-    return f"Delted files from `{kwargs['src_path']}`"
+    return f"Deleted files matching `{kwargs['src_path']}`"
