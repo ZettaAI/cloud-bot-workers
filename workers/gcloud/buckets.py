@@ -70,10 +70,10 @@ def bucket(ctx, *args, **kwargs):
 )
 @click.pass_context
 def create(ctx, *args, **kwargs):
-    bucket = Bucket(ctx.obj["name"])
-    bucket.location = kwargs["location"]
+    bucket = Bucket(ctx.obj["client"], name=ctx.obj["name"])
+    bucket.location = kwargs["location"].upper()
     bucket.storage_class = kwargs["class"].upper()
-    ctx.obj["client"].create_bucket(bucket)
+    bucket.create()
     return f"Bucket `{bucket.name}` created."
 
 
