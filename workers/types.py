@@ -24,6 +24,13 @@ class Worker:
         except MissingParameter as err:
             return f":warning: Something went wrong.\n```{err.format_message()}```"
         except Exception as err:
+            err = str(err).split("\n")
+            if len(err) > 5:
+                err_start = "\n".join(err[:2])
+                err_end = "\n".join(err[-2:])
+                err = f"{err_start}\n.\n.\n.\n{err_end}"
+            else:
+                err = "\n".join(err)
             return f":warning: Something went wrong. Please refer `help`.\n```{err}```"
 
     def callback(self, ch, method, properties, body):
