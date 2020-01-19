@@ -9,6 +9,7 @@ import os
 
 import click
 
+from ..types import Worker
 from .cmds import storage as storage_grp
 
 ROUTING_KEY = "cv.#"
@@ -23,4 +24,7 @@ def cv(ctx, *args, **kwargs):
 
 
 cv.add_command(storage_grp)
+
+worker = Worker(cv)
+worker.start(ROUTING_KEY)
 

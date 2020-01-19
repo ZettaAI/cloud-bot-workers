@@ -77,6 +77,22 @@ def create(ctx, *args, **kwargs):
     return f"Bucket `{bucket.name}` created."
 
 
+@bucket.command(
+    "delete", help="Deletes a bucket.", add_help_option=False,
+)
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="Force deletion. (If not forced, the bucket must be empty).",
+)
+@click.pass_context
+def delete(ctx, *args, **kwargs):
+    bucket = Bucket(ctx.obj["client"], name=ctx.obj["name"])
+    bucket.delete(force=kwargs["force"])
+    return f"Bucket `{bucket.name}` deleted."
+
+
 ################
 # UTIL functions
 ################
