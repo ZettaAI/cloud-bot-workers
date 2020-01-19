@@ -51,9 +51,29 @@ def bucket(ctx, *args, **kwargs):
 @bucket.command(
     "create", help="Creates a bucket.", add_help_option=False,
 )
+@click.option(
+    "--location",
+    "-l",
+    type=str,
+    required=False,
+    nargs=1,
+    help="Location of the bucket. (cloud.google.com/storage/docs/locations)",
+)
+@click.option(
+    "--class",
+    "-c",
+    type=str,
+    required=False,
+    nargs=1,
+    help="Default Storage Class for the bucket. "
+    "(cloud.google.com/storage/docs/storage-classes)",
+)
 @click.pass_context
 def create(ctx, *args, **kwargs):
-    bucket = ctx.obj["client"].create_bucket(ctx.obj["name"])
+    bucket = Bucket(ctx.obj["name"])
+    bucket.location = kwargs["location"]
+    bucket.storage_class = kwargs["class"].upper()
+    ctx.obj["client"].create_bucket(bucket)
     return f"Bucket `{bucket.name}` created."
 
 
