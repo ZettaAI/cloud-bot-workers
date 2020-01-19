@@ -19,12 +19,15 @@ from . import config
 from . import amqp_cnxn
 from .slack import Response as SlackResponse
 
+from .cloudvolume import cv as cv_grp
 from .gcloud import gcloud as gcloud_grp
 
 ROUTING_KEY = "help.#"
 cmd_grps = OrderedDict()
 
-# insert alphabetically
+# TODO automate registration based on module design.
+# insert manually for now
+cmd_grps["cv"] = cv_grp
 cmd_grps["gcloud"] = gcloud_grp
 
 
