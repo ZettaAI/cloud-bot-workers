@@ -21,7 +21,7 @@ def invoke_cmd(cmd: str) -> str:
     except MissingParameter as err:
         return f":warning: Something went wrong.\n```{err.format_message()}```"
     except Exception as err:
-        return f":warning: Something went wrong. Check `help`.\n```{err}```"
+        return f":warning: Something went wrong. Please refer `help`.\n```{err}```"
 
 
 def callback(ch, method, properties, body):

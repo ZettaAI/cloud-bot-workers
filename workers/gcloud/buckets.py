@@ -18,30 +18,18 @@ def buckets(ctx, *args, **kwargs):
     return f"```{msg}```"
 
 
-@click.group("bucket", help="Actions related to buckets.", add_help_option=False)
+@click.group(
+    "bucket",
+    help="Actions related to buckets.",
+    add_help_option=False,
+    invoke_without_command=True,
+)
 @click.argument("name", type=str)
 @click.pass_context
 def bucket(ctx, *args, **kwargs):
     """Group for bucket commands."""
     ctx.obj["client"] = Client(project=ctx.obj.get("project", None))
     ctx.obj["name"] = kwargs["name"]
-
-
-###################
-# BUCKET operations
-###################
-
-
-@bucket.command("create", help="Creates a bucket.", add_help_option=False)
-@click.pass_context
-def create(ctx, *args, **kwargs):
-    bucket = ctx.obj["client"].create_bucket(ctx.obj["name"])
-    return f"Bucket `{bucket.name}` created."
-
-
-@bucket.command("lookup", help="Checks if a bucket exisits.", add_help_option=False)
-@click.pass_context
-def lookup(ctx, *args, **kwargs):
     bucket = ctx.obj["client"].lookup_bucket(ctx.obj["name"])
     if not bucket:
         return f"Bucket `{bucket.name}` does not exist."
@@ -53,6 +41,20 @@ def lookup(ctx, *args, **kwargs):
     properties.append(f"Storage Class: {bucket.storage_class}")
     msg = "\n".join(properties)
     return f"```{msg}```"
+
+
+###################
+# BUCKET operations
+###################
+
+
+@bucket.command(
+    "create", help="Creates a bucket.", add_help_option=False,
+)
+@click.pass_context
+def create(ctx, *args, **kwargs):
+    bucket = ctx.obj["client"].create_bucket(ctx.obj["name"])
+    return f"Bucket `{bucket.name}` created."
 
 
 ################
