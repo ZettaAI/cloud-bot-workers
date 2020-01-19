@@ -85,13 +85,6 @@ def move(ctx, *args, **kwargs):
 @click.argument("src_path", type=str, required=True)
 @click.pass_context
 def delete(ctx, *args, **kwargs):
-    # with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"]) as src, Storage(
-    #     kwargs["dst_path"], n_threads=ctx.obj["n_threads"]
-    # ) as dst:
-    #     files = src.list_files()
-    #     dst.put_files(src.get_files(files))  # pylint: disable=no-member
-    #     src.delete_files(files)
-    # return f"Moved files from `{kwargs['src_path']}` to `{kwargs['dst_path']}`"
     cmd = ["gsutil", "-m", "rm", kwargs["src_path"]]
     proc = run(cmd, capture_output=True)
     if proc.returncode:
