@@ -1,7 +1,12 @@
 import os
+from subprocess import run
+from subprocess import STDOUT
+from subprocess import DEVNULL
+
 
 import click
 from cloudvolume import Storage
+from google.cloud.storage import Client
 
 
 @click.group(
@@ -34,13 +39,15 @@ def storage(ctx, *args, **kwargs):
 @click.argument("dst_path", type=str, required=True)
 @click.pass_context
 def copy(ctx, *args, **kwargs):
-    with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"]) as src, Storage(
-        kwargs["dst_path"], n_threads=ctx.obj["n_threads"]
-    ) as dst:
-        files = src.list_files(flat=True)
-        contents = src.get_files(files)
-        print(list(files), src._layer_path)
-        dst.put_files(zip(files, contents))  # pylint: disable=no-member
+    # with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"]) as src, Storage(
+    #     kwargs["dst_path"], n_threads=ctx.obj["n_threads"]
+    # ) as dst:
+    #     files = src.list_files(prefix="yo", flat=True)
+    #     contents = src.get_files(files)
+    #     dst.put_files(zip(files, contents))  # pylint: disable=no-member
+    # return f"Copied files from `{kwargs['src_path']}` to `{kwargs['dst_path']}`"
+    cmd = ["gsutil", "-m", "cp", "-R", kwargs["src_path"], kwargs["dst_path"]]
+    run(cmd, stdout=DEVNULL, stderr=STDOUT)
     return f"Copied files from `{kwargs['src_path']}` to `{kwargs['dst_path']}`"
 
 
@@ -55,10 +62,15 @@ def copy(ctx, *args, **kwargs):
 @click.argument("dst_path", type=str, required=True)
 @click.pass_context
 def move(ctx, *args, **kwargs):
-    with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"]) as src, Storage(
-        kwargs["dst_path"], n_threads=ctx.obj["n_threads"]
-    ) as dst:
-        files = src.list_files()
-        dst.put_files(src.get_files(files))  # pylint: disable=no-member
-        src.delete_files(files)
+    # with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"]) as src, Storage(
+    #     kwargs["dst_path"], n_threads=ctx.obj["n_threads"]
+    # ) as dst:
+    #     files = src.list_files()
+    #     dst.put_files(src.get_files(files))  # pylint: disable=no-member
+    #     src.delete_files(files)
+    # return f"Moved files from `{kwargs['src_path']}` to `{kwargs['dst_path']}`"
+    cmd = ["gsutil", "-m", "mv", kwargs["src_path"], kwargs["dst_path"]]
+    proc = run(cmd, capture_output=True)
+    if proc.returncode:
+        raise ValueError(proc.stderr.decode("utf-8"))
     return f"Moved files from `{kwargs['src_path']}` to `{kwargs['dst_path']}`"

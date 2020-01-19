@@ -14,9 +14,6 @@ from ..slack import Response as SlackResponse
 
 
 def invoke_cmd(cmd: str) -> str:
-    ctx = Context(cmd_grp, info_name=cmd_grp.name, obj={})
-    cmd_grp.parse_args(ctx, cmd.split()[1:])
-    return cmd_grp.invoke(ctx)    
     try:
         ctx = Context(cmd_grp, info_name=cmd_grp.name, obj={})
         cmd_grp.parse_args(ctx, cmd.split()[1:])
@@ -24,7 +21,13 @@ def invoke_cmd(cmd: str) -> str:
     except MissingParameter as err:
         return f":warning: Something went wrong.\n```{err.format_message()}```"
     except Exception as err:
-        print(err)
+        err = str(err).split("\n")
+        if len(err) > 5:
+            err_start = "\n".join(err[:2])
+            err_end = "\n".join(err[-2:])
+            err = f"{err_start}\n.\n.\n.\n{err_end}"
+        else:
+            err = "\n".join(err)
         return f":warning: Something went wrong. Please refer `help`.\n```{err}```"
 
 

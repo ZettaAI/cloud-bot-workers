@@ -16,7 +16,8 @@ RUN apt-get update \
     && echo "deb https://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" > /etc/apt/sources.list.d/google-cloud-sdk.list \
     && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
     && apt-get update \
-    && apt-get install -y google-cloud-sdk \    
+    && apt-get install -y google-cloud-sdk \
+    && gcloud auth activate-service-account --key-file /root/.cloudvolume/secrets/google-secret.json \
     #
     # need numpy for cloud-volume / fpzip error
     && pip install --no-cache-dir --upgrade numpy \
