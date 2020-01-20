@@ -28,6 +28,7 @@ from google.cloud.storage import Client
 def storage(ctx, *args, **kwargs):
     """Group for Storage commands."""
     ctx.obj["n_threads"] = kwargs["n_threads"]
+    ctx.obj["long_job"] = True
 
 
 @storage.command(

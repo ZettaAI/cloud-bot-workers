@@ -1,5 +1,6 @@
 from json import dumps
 from json import loads
+from typing import Tuple
 
 from requests import post
 from requests import codes
@@ -17,13 +18,14 @@ class Worker:
     def __init__(self, cmd_grp: Group):
         self._grp = cmd_grp
 
-    def invoke_cmd(self, cmd: str) -> str:
+    def invoke_cmd(self, cmd: str) -> Tuple[bool, str]:
+        ctx = Context(self._grp, info_name=self._grp.name, obj={})
+        ctx.obj["long_job"] = False
         try:
-            ctx = Context(self._grp, info_name=self._grp.name, obj={})
             self._grp.parse_args(ctx, cmd.split()[1:])
-            return self._grp.invoke(ctx)
+            msg = self._grp.invoke(ctx)
         except MissingParameter as err:
-            return f":warning: Something went wrong.\n```{err.format_message()}```"
+            msg = f":warning: Something went wrong.\n```{err.format_message()}```"
         except Exception as err:
             err = str(err).split("\n")
             if len(err) > 5:
@@ -32,13 +34,17 @@ class Worker:
                 err = f"{err_start}\n.\n.\n.\n{err_end}"
             else:
                 err = "\n".join(err)
-            return f":warning: Something went wrong. Please refer `help`.\n```{err}```"
+            msg = f":warning: Something went wrong. Please refer `help`.\n```{err}```"
+        return (ctx.obj["long_job"], msg)
 
     def callback(self, ch, method, properties, body):
         event = loads(body)["event"]
-        msg = self.invoke_cmd(event["user_cmd"])
+        long_job, msg = self.invoke_cmd(event["user_cmd"])
         response = SlackResponse(event)
-        assert response.send(msg).status_code == codes.ok  # pylint: disable=no-member
+        assert (
+            response.send(msg, long_job).status_code
+            == codes.ok  # pylint: disable=no-member
+        )
 
     def start(self, routing_key: str, callback: callable):
         channel = amqp_cnxn.channel()

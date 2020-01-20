@@ -15,16 +15,20 @@ from pika.credentials import PlainCredentials
 load_dotenv()
 
 _config_fields = (
-    "SLACK_API_POST",
-    "SLACK_API_TOKEN",
+    "SLACK_API_MESSAGE_POST",
+    "SLACK_API_CONVERSATION_HISTORY",
+    "SLACK_API_BOT_ACCESS_TOKEN",
     "AMQP_SERVICE_HOST",
     "AMQP_USERNAME",
     "AMQP_PASSWORD",
     "EXCHANGE_NAME",
 )
 _config_defaults = (
-    os.environ.get("SLACK_API_POST", "https://slack.com/api/chat.postMessage"),
-    os.environ["SLACK_API_TOKEN"],
+    os.environ.get("SLACK_API_MESSAGE_POST", "https://slack.com/api/chat.postMessage"),
+    os.environ.get(
+        "SLACK_API_CONVERSATION_HISTORY", "https://slack.com/api/conversations.history"
+    ),
+    os.environ["SLACK_API_BOT_ACCESS_TOKEN"],
     os.environ.get("AMQP_SERVICE_HOST", "localhost"),
     os.environ.get("AMQP_USERNAME", "guest"),
     os.environ.get("AMQP_PASSWORD", "guest"),
