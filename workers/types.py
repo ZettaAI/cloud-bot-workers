@@ -18,28 +18,10 @@ class Worker:
     def __init__(self, cmd_grp: Group):
         self._grp = cmd_grp
 
-    def invoke_cmd(self, cmd: str) -> Tuple[bool, str]:
-        ctx = Context(self._grp, info_name=self._grp.name, obj={})
-        ctx.obj["long_job"] = False
-        try:
-            self._grp.parse_args(ctx, cmd.split()[1:])
-            msg = self._grp.invoke(ctx)
-        except MissingParameter as err:
-            msg = f":warning: Something went wrong.\n```{err.format_message()}```"
-        except Exception as err:
-            err = str(err).split("\n")
-            if len(err) > 5:
-                err_start = "\n".join(err[:2])
-                err_end = "\n".join(err[-2:])
-                err = f"{err_start}\n.\n.\n.\n{err_end}"
-            else:
-                err = "\n".join(err)
-            msg = f":warning: Something went wrong. Please refer `help`.\n```{err}```"
-        return (ctx.obj["long_job"], msg)
-
     def callback(self, ch, method, properties, body):
         event = loads(body)["event"]
-        long_job, msg = self.invoke_cmd(event["user_cmd"])
+        # print(dumps(event, indent=2))
+        long_job, msg = self._invoke_cmd(event["user_cmd"], event["user"])
         response = SlackResponse(event)
         assert (
             response.send(msg, long_job).status_code
@@ -60,6 +42,26 @@ class Worker:
 
         print(" [*] Waiting for work. To exit press CTRL+C")
         channel.start_consuming()
+
+    def _invoke_cmd(self, cmd: str, user_id: str) -> Tuple[bool, str]:
+        ctx = Context(self._grp, info_name=self._grp.name, obj={})
+        ctx.obj["long_job"] = False
+        ctx.obj["user_id"] = user_id
+        try:
+            self._grp.parse_args(ctx, cmd.split()[1:])
+            msg = self._grp.invoke(ctx)
+        except MissingParameter as err:
+            msg = f":warning: Something went wrong.\n```{err.format_message()}```"
+        except Exception as err:
+            err = str(err).split("\n")
+            if len(err) > 5:
+                err_start = "\n".join(err[:2])
+                err_end = "\n".join(err[-2:])
+                err = f"{err_start}\n.\n.\n.\n{err_end}"
+            else:
+                err = "\n".join(err)
+            msg = f":warning: Something went wrong. Please refer `help`.\n```{err}```"
+        return (ctx.obj["long_job"], msg)
 
 
 class HelpWorker(Worker):

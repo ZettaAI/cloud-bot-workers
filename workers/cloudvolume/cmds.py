@@ -8,6 +8,8 @@ import click
 from cloudvolume import Storage
 from google.cloud.storage import Client
 
+from ..utils import admin_check
+
 
 @click.group(
     "storage",
@@ -63,6 +65,7 @@ def copy(ctx, *args, **kwargs):
 @click.argument("dst_path", type=str, required=True)
 @click.pass_context
 def move(ctx, *args, **kwargs):
+    admin_check(ctx.obj["user_id"])
     # with Storage(kwargs["src_path"], n_threads=ctx.obj["n_threads"]) as src, Storage(
     #     kwargs["dst_path"], n_threads=ctx.obj["n_threads"]
     # ) as dst:
@@ -86,6 +89,7 @@ def move(ctx, *args, **kwargs):
 @click.argument("src_path", type=str, required=True)
 @click.pass_context
 def delete(ctx, *args, **kwargs):
+    admin_check(ctx.obj["user_id"])
     cmd = ["gsutil", "-m", "rm", kwargs["src_path"]]
     proc = run(cmd, capture_output=True)
     if proc.returncode:

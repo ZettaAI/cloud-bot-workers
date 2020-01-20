@@ -2,6 +2,8 @@ import click
 from google.cloud.storage import Client
 from google.cloud.storage import Bucket
 
+from ..utils import admin_check
+
 
 PREDEFINED_BUKCET_IAM_ROLES = {
     "read": "roles/storage.objectViewer",
@@ -70,6 +72,7 @@ def bucket(ctx, *args, **kwargs):
 )
 @click.pass_context
 def create(ctx, *args, **kwargs):
+    admin_check(ctx.obj["user_id"])
     bucket = Bucket(ctx.obj["client"], name=ctx.obj["name"])
     bucket.location = kwargs["location"].upper()
     bucket.storage_class = kwargs["class"].upper()
@@ -88,6 +91,7 @@ def create(ctx, *args, **kwargs):
 )
 @click.pass_context
 def delete(ctx, *args, **kwargs):
+    admin_check(ctx.obj["user_id"])
     bucket = Bucket(ctx.obj["client"], name=ctx.obj["name"])
     bucket.delete(force=kwargs["force"])
     return f"Bucket `{bucket.name}` deleted."
@@ -171,6 +175,7 @@ def add_bucket_iam_member(ctx, *args, **kwargs):
     Add a new member to an IAM Policy.
     For users external to the organization, only accounts associated with Gmail will work.
     """
+    admin_check(ctx.obj["user_id"])
     member = kwargs["member"]
     bucket = ctx.obj["client"].bucket(ctx.obj["name"])
     msg = _bucket_iam_helper(bucket, member, _get_roles(**kwargs), True)
@@ -198,6 +203,7 @@ def add_bucket_iam_member(ctx, *args, **kwargs):
 @click.pass_context
 def remove_bucket_iam_member(ctx, *args, **kwargs):
     """Remove member from bucket IAM Policy."""
+    admin_check(ctx.obj["user_id"])
     member = kwargs["member"]
     bucket = ctx.obj["client"].bucket(ctx.obj["name"])
     msg = _bucket_iam_helper(bucket, member, _get_roles(**kwargs), False)

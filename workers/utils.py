@@ -7,6 +7,9 @@ from click import Group
 from click import Context
 from click import Command
 
+from .db import is_admin
+from .exceptions import PermissionDenied
+
 
 def _get_main_help_msg(cmd_grps: dict):
     """
@@ -44,3 +47,11 @@ def get_help_msg(cmd: str, cmd_grps: dict) -> str:
         )
         ctx = Context(nested_grp_or_cmd, info_name=" ".join(cmds[1:]))
         return f"```{nested_grp_or_cmd.get_help(ctx)}```"
+
+
+def admin_check(user_id: str) -> str:
+    if is_admin(user_id):
+        return
+    raise PermissionDenied(
+        "You do not seem to have the necessary permissions to perform this action."
+    )

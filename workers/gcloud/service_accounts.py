@@ -8,6 +8,7 @@ from google.oauth2 import service_account
 from cloudvolume.storage import SimpleStorage
 
 from . import utils
+from ..utils import admin_check
 
 
 class ServiceAccountActions:
@@ -174,6 +175,7 @@ def _get_full_key_name(
 @click.pass_context
 def service_accounts(ctx, *args, **kwargs):
     """Group for Service Account commands."""
+    admin_check(ctx.obj["user_id"])
     ctx.obj["sa_actions"] = ServiceAccountActions(ctx.obj["project"])
     return ctx.obj["sa_actions"].list()
 
