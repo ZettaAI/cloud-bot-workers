@@ -28,15 +28,16 @@ ROUTING_KEY = "gcloud.#"
     show_default=os.environ["DEFAULT_PROJECT"],
 )
 @click.pass_context
-def gcloud(ctx, *args, **kwargs):
+def cmd_grp(ctx, *args, **kwargs):
     ctx.obj["project"] = kwargs["project"]
 
 
-gcloud.add_command(bucket_grp)
-gcloud.add_command(buckets_grp)
-gcloud.add_command(sa_grp)
+cmd_grp.add_command(bucket_grp)
+cmd_grp.add_command(buckets_grp)
+cmd_grp.add_command(sa_grp)
 
 
-worker = Worker(gcloud)
-worker.start(ROUTING_KEY)
+if __name__ == "__main__":
+    worker = Worker(cmd_grp)
+    worker.start(ROUTING_KEY, worker.callback)
 

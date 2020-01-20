@@ -9,6 +9,7 @@ from click.exceptions import MissingParameter
 
 from . import config
 from . import amqp_cnxn
+from .utils import get_help_msg
 from .slack import Response as SlackResponse
 
 
@@ -35,12 +36,11 @@ class Worker:
 
     def callback(self, ch, method, properties, body):
         event = loads(body)["event"]
-        # print(dumps(event, indent=2))
         msg = self.invoke_cmd(event["user_cmd"])
         response = SlackResponse(event)
         assert response.send(msg).status_code == codes.ok  # pylint: disable=no-member
 
-    def start(self, routing_key: str):
+    def start(self, routing_key: str, callback: callable):
         channel = amqp_cnxn.channel()
         channel.exchange_declare(exchange=config.EXCHANGE_NAME, exchange_type="topic")
 
@@ -49,9 +49,25 @@ class Worker:
             exchange=config.EXCHANGE_NAME, queue=queue_name, routing_key=routing_key
         )
         channel.basic_consume(
-            queue=queue_name, on_message_callback=self.callback, auto_ack=True
+            queue=queue_name, on_message_callback=callback, auto_ack=True
         )
 
         print(" [*] Waiting for work. To exit press CTRL+C")
         channel.start_consuming()
+
+
+class HelpWorker(Worker):
+    def __init__(self, cmd_grps: dict):
+        self._cmd_grps = cmd_grps
+
+    def callback(self, ch, method, properties, body):
+        """Entrypoint for the `help` worker."""
+        event = loads(body)["event"]
+        try:
+            msg = get_help_msg(event["user_cmd"], self._cmd_grps)
+        except Exception as err:
+            msg = ":warning: Something went wrong. Check help to see "
+            msg += f"if your command is properly formatted.\n```{str(err)}```"
+        response = SlackResponse(event)
+        assert response.send(msg).status_code == codes.ok  # pylint: disable=no-member
 
