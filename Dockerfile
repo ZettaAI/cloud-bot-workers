@@ -1,7 +1,6 @@
 FROM gcr.io/zetta-lee-fly-vnc-001/cloud-bot-workers:cloudvolume
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Configure apt and install packages
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 COPY requirements.txt ./requirements.txt
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
@@ -17,7 +16,6 @@ RUN apt-get update \
     && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
     && apt-get update \
     && apt-get install -y google-cloud-sdk \
-    && gcloud auth activate-service-account --key-file /root/.cloudvolume/secrets/google-secret.json \
     #
     # need numpy for cloud-volume / fpzip error
     && pip install --no-cache-dir --upgrade numpy \
@@ -27,3 +25,4 @@ RUN apt-get update \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
+COPY . ./

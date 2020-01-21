@@ -1,4 +1,5 @@
 cloud-volume
+supervisor
 python-dotenv
 slackclient
 click
