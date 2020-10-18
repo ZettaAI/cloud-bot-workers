@@ -1,4 +1,4 @@
-git+https://github.com/ZettaAI/cloud-bot-workers.git@akhilesh-ground-truth-bot#subdirectory=common
+git+https://github.com/ZettaAI/cloud-bot-workers.git#subdirectory=common
 grpcio
 cloud-volume
 python-dotenv
