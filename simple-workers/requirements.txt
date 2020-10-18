@@ -1,0 +1,11 @@
+git+https://github.com/ZettaAI/cloud-bot-workers.git@akhilesh-ground-truth-bot#subdirectory=common
+grpcio
+cloud-volume
+python-dotenv
+slackclient
+click
+pika
+google-cloud-storage
+google-api-python-client
+google-auth
+supervisor

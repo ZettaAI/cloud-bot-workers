@@ -6,9 +6,9 @@ import click
 import googleapiclient.discovery
 from google.oauth2 import service_account
 from cloudvolume.storage import SimpleStorage
+from CloudBotWorkersCommon.utils import admin_check
 
 from . import utils
-from ..utils import admin_check
 
 
 class ServiceAccountActions:

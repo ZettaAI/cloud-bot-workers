@@ -1,0 +1,14 @@
+git+https://github.com/ZettaAI/cloud-bot-workers.git@akhilesh-ground-truth-bot#subdirectory=common
+grpcio
+google-cloud-firestore
+cloud-volume
+cloud-files
+task-queue
+slackclient
+click
+pika
+six
+pillow
+joblib
+h5py
+supervisor

@@ -1,16 +1,16 @@
 """
 Workers for doing stuff on gcloud.
 """
-import os
+from os import environ
 
 import click
 
 from .buckets import bucket as bucket_grp
 from .buckets import buckets as buckets_grp
 from .service_accounts import service_accounts as sa_grp
-from ..types import Worker
 
 ROUTING_KEY = "gcloud.#"
+ENABLED = True if environ.get("GCLOUD_WORKER") else False
 
 
 @click.group(
@@ -24,8 +24,8 @@ ROUTING_KEY = "gcloud.#"
     type=str,
     nargs=1,
     help="Project name.",
-    default=lambda: os.environ["DEFAULT_PROJECT"],
-    show_default=os.environ["DEFAULT_PROJECT"],
+    default=lambda: environ["DEFAULT_GCP_PROJECT"],
+    show_default=environ["DEFAULT_GCP_PROJECT"],
 )
 @click.pass_context
 def cmd_grp(ctx, *args, **kwargs):
@@ -35,9 +35,3 @@ def cmd_grp(ctx, *args, **kwargs):
 cmd_grp.add_command(bucket_grp)
 cmd_grp.add_command(buckets_grp)
 cmd_grp.add_command(sa_grp)
-
-
-if __name__ == "__main__":
-    worker = Worker(cmd_grp)
-    worker.start(ROUTING_KEY, worker.callback)
-

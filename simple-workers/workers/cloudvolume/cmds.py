@@ -5,10 +5,8 @@ from subprocess import DEVNULL
 
 
 import click
-from cloudvolume import Storage
 from google.cloud.storage import Client
-
-from ..utils import admin_check
+from CloudBotWorkersCommon.utils import admin_check
 
 
 @click.group(

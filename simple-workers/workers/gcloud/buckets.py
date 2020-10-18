@@ -1,8 +1,7 @@
 import click
 from google.cloud.storage import Client
 from google.cloud.storage import Bucket
-
-from ..utils import admin_check
+from CloudBotWorkersCommon.utils import admin_check
 
 
 PREDEFINED_BUKCET_IAM_ROLES = {

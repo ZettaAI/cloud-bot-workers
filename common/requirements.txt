@@ -1,0 +1,5 @@
+slackclient
+click
+pika
+grpcio
+google-cloud-firestore

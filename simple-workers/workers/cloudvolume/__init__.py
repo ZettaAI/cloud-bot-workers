@@ -5,13 +5,14 @@ CloudVolume supports multiple storage protocols.
 https://github.com/seung-lab/cloud-volume
 """
 
-import os
+from os import environ
 
 import click
 
 from .cmds import storage as storage_grp
 
 ROUTING_KEY = "cv.#"
+ENABLED = True if environ.get("CV_WORKER") else False
 
 
 @click.group(

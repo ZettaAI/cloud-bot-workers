@@ -21,7 +21,7 @@ class Response:
             "Authorization": f"Bearer {config.SLACK_API_BOT_ACCESS_TOKEN}"
         }
 
-    def send(self, message: str, long_job: bool = False):
+    def send(self, message: str, long_job: bool = False, broadcast: bool = False):
         """
         Make call to slack api.
         If the latest message is not the command run,
@@ -32,16 +32,26 @@ class Response:
             long_job and self._check_post_to_thread()
         ):
             return self.post_to_thread(
-                message, self.event["event_ts"], self.event["channel"]
+                message,
+                self.event["event_ts"],
+                self.event["channel"],
+                broadcast=broadcast,
             )
         else:
             return self.post_to_user(message, self.event["channel"])
 
-    def post_to_thread(self, message: str, ts: str, channel: str = None):
+    def post_to_thread(
+        self, message: str, ts: str, channel: str = None, broadcast: bool = False
+    ):
         response = post(
             config.SLACK_API_MESSAGE_POST,
             headers=self.auth_headers,
-            data={"channel": channel, "text": message, "thread_ts": ts},
+            data={
+                "channel": channel,
+                "text": message,
+                "thread_ts": ts,
+                "reply_broadcast": broadcast,
+            },
         )
         return response
 
@@ -49,7 +59,7 @@ class Response:
         response = post(
             config.SLACK_API_MESSAGE_POST,
             headers=self.auth_headers,
-            data={"channel": channel, "text": message,},
+            data={"channel": channel, "text": message},
         )
         return response
 
@@ -69,4 +79,3 @@ class Response:
         )
         response = loads(response.content)
         return not response["messages"][0]["ts"] == self.event["ts"]
-
