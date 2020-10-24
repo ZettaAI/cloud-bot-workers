@@ -11,14 +11,11 @@ class Worker:
     def __init__(self, cmd_grp: Group):
         self._grp = cmd_grp
 
-    def _invoke_cmd(
-        self, cmd: str, user_id: str, slack_response: SlackResponse
-    ) -> Tuple[bool, str]:
+    def _invoke_cmd(self, cmd: str, slack_response: SlackResponse) -> Tuple[bool, str]:
         from click import Context
         from click.exceptions import MissingParameter
 
         ctx = Context(self._grp, info_name=self._grp.name, obj={})
-        ctx.obj["user_id"] = user_id
         ctx.obj["slack_response"] = slack_response
         try:
             self._grp.parse_args(ctx, cmd.split()[1:])
@@ -39,7 +36,7 @@ class Worker:
 
     def callback(self, ch, method, properties, body):
         event = loads(body)["event"]
-        self._invoke_cmd(event["user_cmd"], event["user"], SlackResponse(event))
+        self._invoke_cmd(event["user_cmd"], SlackResponse(event))
 
     def start(self, routing_key: str, callback: callable):
         from . import config
