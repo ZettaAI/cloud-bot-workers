@@ -17,11 +17,9 @@ def volume(ctx, *args, **kwargs):
 def preview(ctx, *args, **kwargs):
     from .gtbot import preview_helper
 
-    print("running preview")
-
-    ctx.obj["long_job"] = True
-    ctx.obj["broadcast"] = True
-    return preview_helper(kwargs["path"], ctx.obj["user_id"])
+    ctx.obj["slack_response"].long_job = True
+    ctx.obj["slack_response"].send("Working on it, check the thread for updates.")
+    return preview_helper(kwargs["path"], ctx.obj["slack_response"])
 
 
 @volume.command(
@@ -36,9 +34,9 @@ def create_cutouts(ctx, *args, **kwargs):
 
     # https://neuromancer-seung-import.appspot.com/?json_url=https://poyntr.co/json/TVNqdURxQ05iNTZE
 
-    ctx.obj["long_job"] = True
-    ctx.obj["broadcast"] = True
-    return cutout_helper(kwargs["url"], ctx.obj["user_id"])
+    ctx.obj["slack_response"].long_job = True
+    ctx.obj["slack_response"].send("Working on it, check the thread for updates.")
+    return cutout_helper(kwargs["url"], ctx.obj["slack_response"])
 
 
 @volume.command(
@@ -51,6 +49,6 @@ def create_cutouts(ctx, *args, **kwargs):
 def create_bboxes(ctx, *args, **kwargs):
     from .gtbot import bbox_helper
 
-    ctx.obj["long_job"] = True
-    ctx.obj["broadcast"] = True
-    return bbox_helper(kwargs["url"], ctx.obj["user_id"])
+    ctx.obj["slack_response"].long_job = True
+    ctx.obj["slack_response"].send("Working on it, check the thread for updates.")
+    return bbox_helper(kwargs["url"], ctx.obj["slack_response"])

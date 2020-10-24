@@ -1,23 +1,24 @@
 from os import path
 from os import environ
 from json import dumps
-from json import loads
 from collections import OrderedDict
 
 
 def get_username(user_id: str) -> str:
-    from json import loads
     from requests import get
     from CloudBotWorkersCommon import config
 
-    headers = {"Authorization": f"Bearer {config.SLACK_API_BOT_ACCESS_TOKEN}"}
-    response = get(
-        config.SLACK_API_USER_INFO,
-        headers=headers,
-        params={"user": user_id},
-    )
-    response = loads(response.content)
-    return response["user"]["real_name"].lower().replace(" ", "_")
+    try:
+        headers = {"Authorization": f"Bearer {config.SLACK_API_BOT_ACCESS_TOKEN}"}
+        response = get(
+            config.SLACK_API_USER_INFO,
+            headers=headers,
+            params={"user": user_id},
+        )
+        response = response.json()
+        return response["user"]["real_name"].lower().replace(" ", "_")
+    except:
+        return "cloud_bot_gtbot"
 
 
 def post_ngl_state_server(state: dict):
@@ -32,19 +33,22 @@ def post_ngl_state_server(state: dict):
 
 def get_ng_state(url: str):
     from urllib import parse
+    from json import loads
     from requests import get
 
     components = parse.urlparse(url)
+    u = None
     try:
         if len(components.fragment) == 0:
-            url = components.query.replace("json_url=", "")
-            r = get(f"{url}?middle_auth_token={environ.get('AUTH_SERVER_TOKEN', '')}")
-            state = r.text
+            u = components.query.replace("json_url=", "")
+            u = f"{u}?middle_auth_token={environ.get('AUTH_SERVER_TOKEN', '')}"
+            r = get(u)
+            state = r.content
         else:
             state = parse.unquote(components.fragment)[1:]
         return loads(state, object_pairs_hook=OrderedDict)
-    except (ValueError, KeyError):
-        raise ValueError(f"Cannot read json state from the neuroglancer link: {url}")
+    except Exception as e:
+        raise ValueError(f"Could not read json state at {u}: {repr(e)}")
 
 
 def draw_bounding_cube(img, bbox, val=255, thickness=1):

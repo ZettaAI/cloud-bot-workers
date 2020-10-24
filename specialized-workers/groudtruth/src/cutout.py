@@ -5,6 +5,7 @@ T Macrina
 Create VAST directory from CloudVolume cutout
 """
 import os
+from CloudBotWorkersCommon.slack import Response as SlackResponse
 
 
 def get_first_image_layer(layers: list) -> str:
@@ -40,16 +41,22 @@ def get_bboxes(layers: list) -> list:
     return bboxes
 
 
-def create_cutouts(url, parameters, author: str = "cloud_bot_gtbot"):
+def create_cutouts(
+    url: str, parameters: dict, author: str, slack_response: SlackResponse
+) -> None:
     from .utils import get_ng_state
 
+    slack_response.send("Parsing state from neuroglancer link.")
     state = get_ng_state(url)
     if state is None:
         return "Nothing to do."
+
+    slack_response.send("Parsing layers and bounding boxes.")
     cv_path = get_first_image_layer(state["layers"])
     bboxes = get_bboxes(state["layers"])
     if not bboxes:
-        return "Nothing to do."
+        slack_response.send("Did not find bouding box. Nothing to do.")
+        return
 
     try:
         voxel_size = state["navigation"]["pose"]["position"]["voxelSize"]
@@ -57,12 +64,14 @@ def create_cutouts(url, parameters, author: str = "cloud_bot_gtbot"):
         raise ValueError(f"Could not get voxelSize from {url}")
     parameters["voxel_size"] = voxel_size
 
-    responses = []
+    print("Parsed parameters, creating cutouts.")
+    slack_response.send("Parsed parameters, creating cutouts.")
+
     for b in bboxes:
-        dst_path = os.path.join(author, b["name"])
-        msg = cloudvolume_to_dir(cv_path, dst_path, b["bbox"], parameters, author)
-        responses.append(f"```{msg}```")
-    return responses
+        msg = cloudvolume_to_dir(
+            cv_path, os.path.join(author, b["name"]), b["bbox"], parameters, author
+        )
+        slack_response.send(f"```{msg}```", broadcast=True)
 
 
 def _draw_bounding_cube(cv_path, bbox, mip, pad):
@@ -78,9 +87,9 @@ def _draw_bounding_cube(cv_path, bbox, mip, pad):
     vol_start = mip0_bbox.minpt
     vol_stop = mip0_bbox.maxpt
     vol_bbox = cv.bbox_to_mip(  # pylint: disable=no-member
-        Bbox(vol_start - pad, vol_stop + pad), 0, mip
+        Bbox(vol_start - pad, vol_stop + pad), mip, mip
     )
-    draw_bbox = cv.bbox_to_mip(mip0_bbox, 0, mip)  # pylint: disable=no-member
+    draw_bbox = cv.bbox_to_mip(mip0_bbox, mip, mip)  # pylint: disable=no-member
     arr = cv[vol_bbox.to_slices()][:, :, :, 0]  # pylint: disable=unsubscriptable-object
     local_draw_bbox = draw_bbox - vol_bbox.minpt
     if any(x != 0 for x in pad):
@@ -102,6 +111,7 @@ def cloudvolume_to_dir(
 
     img_arr, draw_bbox = _draw_bounding_cube(cv_path, bbox, mip, pad)
     dst_path = os.path.join(os.environ["GT_BUCKET_PATH"], dst_path)
+    print(f"writing to {os.path.join(dst_path, 'raw')}")
     write_to_cloud_bucket(os.path.join(dst_path, "raw"), img_arr, extension=extension)
     params = {
         "raw": {
@@ -121,7 +131,7 @@ def cloudvolume_to_dir(
     )
 
     msg = f"Cutout Volume `{dst_path}`\n"
-    msg += f"Image layer: `{cv_path}`"
+    msg += f"Image layer: `{cv_path}`\n"
     msg += f"Bounding box: [{', '.join(str(x) for x in bbox)}]\n"
     msg += f"Size: [{', '.join(str(int(x)) for x in draw_bbox.size3())}]\n"
     msg += f"Mip level: {mip}\n"

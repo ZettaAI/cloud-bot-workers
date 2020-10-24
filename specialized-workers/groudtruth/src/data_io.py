@@ -5,57 +5,69 @@ from typing import Union
 import numpy as np
 from PIL import Image
 from cloudfiles import CloudFiles
+from cloudvolume import Storage
 
 
 def load_metadata(p: str) -> dict:
     from json import loads
 
-    print(p)
     cf = CloudFiles(p)
     fnames = ["params.json", "metadata.json", "README.md", "raw/README.md"]
     cf.get(fnames, raw=True)
     for f in fnames:
         try:
-            print("cf[f]", f, cf[f])
             return loads(cf[f])
         except Exception:
             pass
     return {}
 
 
-def _load_image(p: Union[str, bytes], from_cloud: bool = True):
+def _load_image(p: bytes):
     """
     Open TIF image and convert to numpy ndarray of dtype.
     Currently tested for only for uint8 -> uint8, uint32 or uint24 -> uint32
     """
-    src = BytesIO(p) if from_cloud else p
-    img_arr = np.array(Image.open(src))
+    img_arr = np.array(Image.open(BytesIO(p)))
+    print("img_arr.shape", img_arr.shape)
     if len(img_arr.shape) == 3:
         img_arr = np.dstack((np.zeros(img_arr.shape[:2] + (1,)), img_arr))
-        img_arr = img_arr[:, :, ::-1].astype(np.uint8).view(np.uint32)
-        img_arr = img_arr.reshape(img_arr.shape[:2])
-        return img_arr.astype(np.uint32)
-    return img_arr.astype(np.uint8)
+        img_arr = img_arr[:, :, ::-1]
+        img_arr = img_arr.astype(np.uint8).view(np.uint32)
+        img_arr = img_arr.reshape(img_arr.shape[:2]).T
+    return img_arr.astype(np.uint32)
 
 
-def load_from_dir(p, extension: str = "tif", from_cloud: bool = True) -> dict:
+def load_from_stor(p: str, extension: str = "tif") -> dict:
+    stor = Storage(p)
+    files = stor.list_files(flat=True)  # pylint: disable=no-member
+
+    names = []
+    for f in sorted(files):
+        if extension in f:
+            names.append(f)
+
+    print("count", len(names))
+    imgs = []
+    for f in names:
+        imgs.append(_load_image(stor.get_file(f)))  # pylint: disable=no-member
+    return {"seg": np.asarray(imgs).transpose(2, 1, 0)}
+
+
+def load_from_dir(p: str, extension: str = "tif") -> dict:
     """Assume directory contains only the images to be stored"""
-    from os import listdir
-    from joblib import delayed
-    from joblib import Parallel
+    files = CloudFiles(p)
+    names = []
+    for f in sorted(files.list()):
+        if extension in f:
+            names.append(f)
 
-    if from_cloud:
-        files = CloudFiles(p)
-        names = sorted(files.list())
-        files.get(names, raw=True)
-        files = [files[k] for k in names]
-    else:
-        files = sorted([x for x in listdir(p) if x.endswith(extension)])
-        files = [path.join(p, f) for f in files]
+    print("count", len(names))
+    files.get(names, raw=True)
+    files_bytes = [files[k] for k in names]
 
-    imgs = Parallel(n_jobs=-1)(delayed(_load_image)(f, from_cloud) for f in files)
-    if imgs[0].dtype == np.uint8:
-        return {"uploaded_image": np.asarray(imgs).transpose(2, 1, 0)}
+    imgs = []
+    for f in files_bytes:
+        imgs.append(_load_image(f))
     return {"seg": np.asarray(imgs).transpose(2, 1, 0)}
 
 
@@ -109,5 +121,5 @@ def write_to_cloud_bucket(dst_dir, img_arr, extension="tif"):
     for k in range(img_arr.shape[2]):
         img = Image.fromarray(img_arr[:, :, k].T)
         img_bytes = BytesIO()
-        img.save(img_bytes, format=extension)
+        img.save(img_bytes, format="tiff" if extension == "tif" else extension)
         cf.put("{0:03d}.{1}".format(k + 1, extension), img_bytes.getvalue())
