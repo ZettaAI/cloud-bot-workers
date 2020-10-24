@@ -20,8 +20,9 @@ class Response:
         self.auth_headers = {
             "Authorization": f"Bearer {config.SLACK_API_BOT_ACCESS_TOKEN}"
         }
+        self.long_job = False
 
-    def send(self, message: str, long_job: bool = False, broadcast: bool = False):
+    def send(self, message: str, broadcast: bool = False):
         """
         Make call to slack api.
         If the latest message is not the command run,
@@ -29,7 +30,7 @@ class Response:
         This is needed for long running jobs.
         """
         if (not "channel_type" in self.event) or (
-            long_job and self._check_post_to_thread()
+            self.long_job and self._check_post_to_thread()
         ):
             return self.post_to_thread(
                 message,

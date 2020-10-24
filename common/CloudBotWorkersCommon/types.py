@@ -11,20 +11,21 @@ class Worker:
     def __init__(self, cmd_grp: Group):
         self._grp = cmd_grp
 
-    def _invoke_cmd(self, cmd: str, user_id: str) -> Tuple[bool, str]:
+    def _invoke_cmd(
+        self, cmd: str, user_id: str, slack_response: SlackResponse
+    ) -> Tuple[bool, str]:
         from click import Context
         from click.exceptions import MissingParameter
 
         ctx = Context(self._grp, info_name=self._grp.name, obj={})
-        ctx.obj["long_job"] = False
-        ctx.obj["broadcast"] = False
         ctx.obj["user_id"] = user_id
+        ctx.obj["slack_response"] = slack_response
         try:
             self._grp.parse_args(ctx, cmd.split()[1:])
-            msg = self._grp.invoke(ctx)
+            self._grp.invoke(ctx)
         except MissingParameter as err:
             msg = f":warning: Something went wrong.\n```{err.format_message()}```"
-            ctx.obj["broadcast"] = False
+            slack_response.send(msg, False)
         except Exception as err:
             err = repr(err).split("\n")
             if len(err) > 5:
@@ -34,13 +35,11 @@ class Worker:
             else:
                 err = "\n".join(err)
             msg = f":warning: Something went wrong. Please refer help.\n```{err}```"
-            ctx.obj["broadcast"] = False
-        return (msg, ctx.obj["long_job"], ctx.obj["broadcast"])
+            slack_response.send(msg, False)
 
     def callback(self, ch, method, properties, body):
         event = loads(body)["event"]
-        msg, long_job, broadcast = self._invoke_cmd(event["user_cmd"], event["user"])
-        SlackResponse(event).send(msg, long_job, broadcast)
+        self._invoke_cmd(event["user_cmd"], event["user"], SlackResponse(event))
 
     def start(self, routing_key: str, callback: callable):
         from . import config
