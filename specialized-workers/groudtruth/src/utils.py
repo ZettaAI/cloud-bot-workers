@@ -60,39 +60,3 @@ def draw_bounding_cube(img, bbox, val=255, thickness=1):
         img[maxpt.x + t, :, z_slice] = val
         img[:, minpt.y + t, z_slice] = val
         img[:, maxpt.y + t, z_slice] = val
-
-
-def create_nglink(image_layer, seg_layers, center, voxel_size) -> str:
-    from urllib import parse
-    from collections import OrderedDict
-
-    layers = OrderedDict()
-    layers["img"] = {"source": "precomputed://" + image_layer, "type": "image"}
-    for s in seg_layers:
-        layers[s] = {
-            "source": "precomputed://" + seg_layers[s],
-            "type": "image" if ("img" in s or "image" in s) else "segmentation",
-        }
-    navigation = {
-        "pose": {"position": {"voxelSize": voxel_size, "voxelCoordinates": center}},
-        "zoomFactor": 4,
-    }
-    state = OrderedDict(
-        [
-            ("layers", layers),
-            ("navigation", navigation),
-            ("showSlices", False),
-            ("layout", "xy-3d"),
-        ]
-    )
-
-    url = f"{environ['NGL_APP_HOST']}/#!{parse.quote(dumps(state))}"
-    try:
-        r = post_ngl_state_server(state)
-    except:
-        return f"neuroglancer link: {url}"
-    if r.ok:
-        link = r.text.strip()
-        link = link[1:-1]
-        return f"neuroglancer link: {environ['NGL_APP_HOST']}/?json_url={link}"
-    return f"neuroglancer link: {url}"

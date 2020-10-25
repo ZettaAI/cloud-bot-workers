@@ -41,10 +41,9 @@ def get_bboxes(layers: list) -> list:
     return bboxes
 
 
-def create_cutouts(
-    url: str, parameters: dict, author: str, slack_response: SlackResponse
-) -> None:
+def create_cutouts(url: str, parameters: dict, slack_response: SlackResponse) -> None:
     from .utils import get_ng_state
+    from .utils import get_username
 
     slack_response.send("Parsing state from neuroglancer link.")
     state = get_ng_state(url)
@@ -64,12 +63,15 @@ def create_cutouts(
         raise ValueError(f"Could not get voxelSize from {url}")
     parameters["voxel_size"] = voxel_size
 
-    print("Parsed parameters, creating cutouts.")
     slack_response.send("Parsed parameters, creating cutouts.")
-
+    author = get_username(slack_response.event["user"])
     for b in bboxes:
         msg = cloudvolume_to_dir(
-            cv_path, os.path.join(author, b["name"]), b["bbox"], parameters, author
+            cv_path,
+            os.path.join(author, "cutouts", b["name"]),
+            b["bbox"],
+            parameters,
+            author,
         )
         slack_response.send(f"```{msg}```", broadcast=True)
 
@@ -111,18 +113,20 @@ def cloudvolume_to_dir(
 
     img_arr, draw_bbox = _draw_bounding_cube(cv_path, bbox, mip, pad)
     dst_path = os.path.join(os.environ["GT_BUCKET_PATH"], dst_path)
-    print(f"writing to {os.path.join(dst_path, 'raw')}")
     write_to_cloud_bucket(os.path.join(dst_path, "raw"), img_arr, extension=extension)
     params = {
         "raw": {
             "pad": pad,
             "bbox": bbox,
-            "mip": mip,
+            "src_mip": mip,
+            "dst_mip": mip,
             "voxel_size": parameters["voxel_size"],
             "user": author,
             "timestamp": str(datetime.utcnow()),
             "cv_path": cv_path,
             "dst_path": dst_path,
+            "extension": extension,
+            "segmentation": false,
         }
     }
 

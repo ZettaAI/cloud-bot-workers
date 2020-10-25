@@ -12,14 +12,29 @@ def volume(ctx, *args, **kwargs):
     help="Preview volume in Neuroglancer. Takes a GCS path (gs://...) as input.",
     add_help_option=False,
 )
+@click.option(
+    "--voxel-size",
+    "-v",
+    type=float,
+    required=False,
+    nargs=3,
+    help="Voxel Size (x,y,z)",
+    default=[10, 10, 40],
+)
 @click.argument("path", type=str, required=True)
 @click.pass_context
 def preview(ctx, *args, **kwargs):
-    from .gtbot import preview_helper
+    from .preview import upload
+    from .utils import get_username
 
-    ctx.obj["slack_response"].long_job = True
-    ctx.obj["slack_response"].send("Working on it, check the thread for updates.")
-    return preview_helper(kwargs["path"], ctx.obj["slack_response"])
+    slack_response = ctx.obj["slack_response"]
+    slack_response.long_job = True
+    slack_response.send("Working on it, check the thread for updates.")
+
+    author = get_username(slack_response.event["user"])
+    voxel_size = kwargs["voxel_size"]
+    upload(kwargs["path"], author, voxel_size, slack_response)
+    slack_response.send("Job completed.")
 
 
 @volume.command(
@@ -30,13 +45,16 @@ def preview(ctx, *args, **kwargs):
 @click.argument("url", type=str, required=True)
 @click.pass_context
 def create_cutouts(ctx, *args, **kwargs):
-    from .gtbot import cutout_helper
-
     # https://neuromancer-seung-import.appspot.com/?json_url=https://poyntr.co/json/TVNqdURxQ05iNTZE
+    from .cutout import create_cutouts
 
-    ctx.obj["slack_response"].long_job = True
-    ctx.obj["slack_response"].send("Working on it, check the thread for updates.")
-    return cutout_helper(kwargs["url"], ctx.obj["slack_response"])
+    slack_response = ctx.obj["slack_response"]
+    slack_response.long_job = True
+    slack_response.send("Working on it, check the thread for updates.")
+
+    cutout_parameters = {"mip": 1, "pad": [256, 256, 4]}
+    create_cutouts(kwargs["url"], cutout_parameters, slack_response)
+    slack_response.send("Job completed.")
 
 
 @volume.command(
@@ -47,8 +65,13 @@ def create_cutouts(ctx, *args, **kwargs):
 @click.argument("url", type=str, required=True)
 @click.pass_context
 def create_bboxes(ctx, *args, **kwargs):
-    from .gtbot import bbox_helper
+    from .bbox import convert_pt_to_bbox
 
-    ctx.obj["slack_response"].long_job = True
-    ctx.obj["slack_response"].send("Working on it, check the thread for updates.")
-    return bbox_helper(kwargs["url"], ctx.obj["slack_response"])
+    slack_response = ctx.obj["slack_response"]
+    slack_response.long_job = True
+    slack_response.send("Working on it, check the thread for updates.")
+
+    bbox_parameters = {"dim": [40920, 40920, 2048]}
+    result = convert_pt_to_bbox(kwargs["url"], bbox_parameters)
+    slack_response.send(result, broadcast=True)
+    slack_response.send("Job completed.")
