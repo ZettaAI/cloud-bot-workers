@@ -20,6 +20,13 @@ def volume(ctx, *args, **kwargs):
     nargs=3,
     help="Voxel Size (x,y,z)",
     default=[10, 10, 40],
+    show_default=True,
+)
+@click.option(
+    "--transpose",
+    "-t",
+    is_flag=True,
+    help="Optionally transpose image data with (1, 0, 2)",
 )
 @click.argument("path", type=str, required=True)
 @click.pass_context
@@ -33,7 +40,7 @@ def preview(ctx, *args, **kwargs):
 
     author = get_username(slack_response.event["user"])
     voxel_size = kwargs["voxel_size"]
-    upload(kwargs["path"], author, voxel_size, slack_response)
+    upload(kwargs["path"], author, voxel_size, slack_response, kwargs["transpose"])
     slack_response.send("Job completed.")
 
 

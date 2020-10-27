@@ -4,6 +4,7 @@ T Macrina
 
 Create VAST directory from CloudVolume cutout
 """
+from typing import Tuple
 import os
 from CloudBotWorkersCommon.slack import Response as SlackResponse
 
@@ -76,7 +77,7 @@ def create_cutouts(url: str, parameters: dict, slack_response: SlackResponse) ->
         slack_response.send(f"```{msg}```", broadcast=True)
 
 
-def _draw_bounding_cube(cv_path, bbox, mip, pad):
+def _draw_bounding_cube(cv_path: str, bbox, mip: int, pad: Tuple[int, int, int]):
     from cloudvolume import CloudVolume
     from cloudvolume.lib import Vec
     from cloudvolume.lib import Bbox
@@ -126,7 +127,7 @@ def cloudvolume_to_dir(
             "cv_path": cv_path,
             "dst_path": dst_path,
             "extension": extension,
-            "segmentation": false,
+            "segmentation": False,
         }
     }
 

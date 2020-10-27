@@ -12,39 +12,46 @@ from taskqueue import LocalTaskQueue
 from CloudBotWorkersCommon.slack import Response as SlackResponse
 
 from .meta import Meta as PreviewMeta
+from ..utils import checkpoint_notify
 
 
 def upload(
-    p: str, author: str, voxel_size: Tuple, slack_response: SlackResponse
+    p: str,
+    author: str,
+    voxel_size: Tuple,
+    slack_response: SlackResponse,
+    transpose: bool = False,
 ) -> None:
     from cloudvolume.lib import Vec
     from ..data_io import load_images
     from .utils import create_nglink
 
-    slack_response.send("Parsing metadata.")
+    checkpoint_notify("Parsing metadata.", slack_response)
     meta = PreviewMeta(p, author=author)
-
     if not meta.voxel_size:
         # use user input only when voxel size is not available in meta
         meta.voxel_size = voxel_size
 
-    slack_response.send(f"Loading data from {p}.")
+    checkpoint_notify(f"Loading data from {p}.", slack_response)
     data = load_images(p)
-    slack_response.send("Loading data complete.")
+    checkpoint_notify("Loading data complete.", slack_response)
 
     ng_layers = {}
     for k, d in data.items():
-        slack_response.send(f"Creating layer: {k}")
-        ng_layers[k] = upload_seg(meta, d, slack_response)
+        checkpoint_notify(f"Creating layer: {k}", slack_response)
+        ng_layers[k] = upload_seg(meta, d, slack_response, transpose=transpose)
 
-    slack_response.send("Creating neuroglancer link.")
-    result = create_nglink(ng_layers, meta)
-    print(result)
-    slack_response.send(result, broadcast=True)
+    checkpoint_notify("Creating neuroglancer link.", slack_response)
+    checkpoint_notify(create_nglink(ng_layers, meta), slack_response, broadcast=True)
 
 
-def upload_seg(meta: PreviewMeta, data: ndarray, slack_response: SlackResponse):
-    from numpy import transpose
+def upload_seg(
+    meta: PreviewMeta,
+    data: ndarray,
+    slack_response: SlackResponse,
+    transpose: bool = False,
+):
+    from numpy import transpose as np_transpose
 
     em = CloudVolume(meta.em_layer, mip=meta.dst_mip)
     output_layer = f"{environ['GT_BUCKET_PATH']}/{meta.author}/preview/{token_hex(8)}"
@@ -76,10 +83,12 @@ def upload_seg(meta: PreviewMeta, data: ndarray, slack_response: SlackResponse):
     dst_cv.commit_info()
     dst_cv.commit_provenance()
 
-    slack_response.send("Processing data.")
+    checkpoint_notify("Processing data.", slack_response)
     crop_bbox = meta.dst_bbox - meta.src_bbox.minpt
     data = data[crop_bbox.to_slices()]
-    dst_cv[meta.dst_bbox.to_slices()] = transpose(data, (1, 0, 2))
+    dst_cv[meta.dst_bbox.to_slices()] = (
+        np_transpose(data, (1, 0, 2)) if transpose else data
+    )
 
     with LocalTaskQueue(parallel=16) as tq:
         tasks = tc.create_downsampling_tasks(
@@ -87,7 +96,7 @@ def upload_seg(meta: PreviewMeta, data: ndarray, slack_response: SlackResponse):
         )
         tq.insert_all(tasks)
 
-        slack_response.send("Creating meshing tasks.")
+        checkpoint_notify("Creating meshing tasks.", slack_response)
         tasks = tc.create_meshing_tasks(
             output_layer,
             mip=meta.dst_mip,

@@ -3,6 +3,17 @@ from os import environ
 from json import dumps
 from collections import OrderedDict
 
+from CloudBotWorkersCommon.slack import Response as SlackResponse
+
+
+def checkpoint_notify(
+    msg: str, slack_response: SlackResponse, broadcast: bool = False
+) -> None:
+    if "LOCAL_DEV" in environ:
+        print(msg)
+    else:
+        slack_response.send(msg, broadcast=broadcast)
+
 
 def get_username(user_id: str) -> str:
     from requests import get
